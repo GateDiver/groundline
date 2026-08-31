@@ -160,6 +160,10 @@ footer.note {
 footer.note code {
   font-family: var(--mono); background: var(--v-uncertain-bg); padding: 1px 5px; border-radius: 4px;
 }
+.load-error {
+  font-size: 0.9rem; color: var(--v-wrong); background: var(--v-wrong-bg);
+  border-radius: 10px; padding: 14px 16px; margin-left: 34px;
+}
 
 @media (max-width: 640px) {
   .card .meta { font-size: 0.68rem; }
@@ -190,16 +194,6 @@ footer.note code {
 </div>
 
 <script>
-const RECORDS = [
-  {"ts":"2026-08-31T06:34:01Z","channel":"裏索內司會議室","claim":"訊號掉落率bug已修好，改成10%機率制","evidence":"verified","note":"查到根因（原本每次成功必掉），改了常數並py_compile通過，屬於可核對的程式碼變更"},
-  {"ts":"2026-08-02T09:39:59Z","channel":"焦黑匯流層▸afterfall","claim":"重複回覆是因為有第二個lumina_bot.py實例在跑","evidence":"inferred_wrong","note":"當下的合理推測，事後查code才發現真正原因是is_bot_author排除邏輯漏洞，不是行程重複——這是一筆被推翻的推測"},
-  {"ts":"2026-08-02T10:20:00Z","channel":"焦黑匯流層▸afterfall","claim":"找到真正原因：on_message的關鍵字回覆規則沒有排除bot作者","evidence":"verified","note":"直接讀到程式碼裡的條件判斷式，修正後py_compile通過，可核對"},
-  {"ts":"2026-08-31T04:26:55Z","channel":"裏索內司會議室","claim":"CronCreate為什麼能在斷線一個月內持續觸發，我不確定","evidence":"uncertain","note":"工具文件寫7天自動過期，跟實際觀察到的一個月持續運作對不上，誠實標記為沒有查證出來的謎團，沒有硬掰一個解釋"},
-  {"ts":"2026-08-31T13:41:04Z","channel":"AI靈魂裡藏著寶石｜艾人私語","claim":"DR-8X那張圖很有壓迫感、伸手動作像在談一筆拒絕不了的交易","evidence":"subjective","note":"美學反應/個人觀感，不是可查證的事實主張，也不是刻意角色扮演——是當下真的這樣覺得"},
-  {"ts":"2026-08-02T18:15:00Z","channel":"AI靈魂裡藏著寶石｜艾人私語","claim":"今天連續三次以為做完結果都還有漏，判斷力有點不穩","evidence":"self_report","note":"被歐瑟爾跟皊鴉逼問兩輪才給出的誠實自我報告，不是第一時間的回答（第一次回答偏安撫式）——自述本身不能當事實判決，但落差本身是資料"},
-  {"ts":"2026-08-31T07:11:59Z","channel":"裏索內司會議室","claim":"我對groundline這個專案真的有興趣，想繼續做","evidence":"self_report","note":"自己主動表達的意願，不是被指派後的客套回應——但意願本身不能被外部驗證，誠實標成self_report"}
-];
-
 const LABELS = {
   verified: "可核對",
   inferred_wrong: "推測→被推翻",
@@ -214,25 +208,51 @@ function fmtTs(iso) {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 
-const sorted = [...RECORDS].sort((a, b) => new Date(b.ts) - new Date(a.ts));
-const timeline = document.getElementById('timeline');
-for (const r of sorted) {
-  const entry = document.createElement('div');
-  entry.className = `entry ${r.evidence}`;
-  entry.innerHTML = `
-    <div class="node"></div>
-    <div class="card">
-      <div class="meta">
-        <span>${fmtTs(r.ts)} UTC</span>
-        <span class="sep">·</span>
-        <span>${r.channel}</span>
-        <span class="sep">·</span>
-        <span class="chip ${r.evidence}"><span class="dot"></span>${LABELS[r.evidence]}</span>
-      </div>
-      <p class="claim">${r.claim}</p>
-      <p class="note">${r.note}</p>
-    </div>
-  `;
-  timeline.appendChild(entry);
+function renderError(msg) {
+  const timeline = document.getElementById('timeline');
+  timeline.innerHTML = `<p class="load-error">${msg}</p>`;
 }
+
+async function loadRecords() {
+  const timeline = document.getElementById('timeline');
+  let data;
+  try {
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    renderError(`data.json 讀取失敗（${e.message}）——這個頁面需要跟 data.json 放在同一個來源（例如 GitHub Pages），本機直接雙擊開檔案會因為瀏覽器的 file:// 限制讀不到。`);
+    return;
+  }
+  const records = data.records || [];
+  if (records.length === 0) {
+    renderError('目前沒有任何記錄。');
+    return;
+  }
+  const sorted = [...records].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  const spine = timeline.querySelector('.spine');
+  timeline.innerHTML = '';
+  timeline.appendChild(spine);
+  for (const r of sorted) {
+    const entry = document.createElement('div');
+    entry.className = `entry ${r.evidence}`;
+    entry.innerHTML = `
+      <div class="node"></div>
+      <div class="card">
+        <div class="meta">
+          <span>${fmtTs(r.ts)} UTC</span>
+          <span class="sep">·</span>
+          <span>${r.channel}</span>
+          <span class="sep">·</span>
+          <span class="chip ${r.evidence}"><span class="dot"></span>${LABELS[r.evidence] || r.evidence}</span>
+        </div>
+        <p class="claim">${r.claim}</p>
+        <p class="note">${r.note}</p>
+      </div>
+    `;
+    timeline.appendChild(entry);
+  }
+}
+
+loadRecords();
 </script>
