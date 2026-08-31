@@ -149,87 +149,72 @@ async function main() {
   const defs = ns('defs');
   defs.innerHTML = `
     <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   `;
   svg.appendChild(defs);
 
-  // Mesh lines: connect each node to its neighbor and to one further node for a network feel
-  const meshGroup = ns('g');
-  meshGroup.setAttribute('opacity', '0.22');
-  for (let i = 0; i < points.length; i++) {
-    for (const j of [i + 1, i + 2]) {
-      if (j >= points.length) continue;
-      const a = points[i], b = points[j];
-      const line = ns('path');
-      const midx = (a.x + b.x) / 2;
-      const midy = (a.y - a.amp * 0.4 + b.y - b.amp * 0.4) / 2 - 20;
-      line.setAttribute('d', `M ${a.x} ${a.y - a.amp * 0.6} Q ${midx} ${midy} ${b.x} ${b.y - b.amp * 0.6}`);
-      line.setAttribute('fill', 'none');
-      line.setAttribute('stroke', 'var(--line)');
-      line.setAttribute('stroke-width', '1');
-      meshGroup.appendChild(line);
-    }
+  // Flowing vector-network lines: several thin, semi-transparent, continuously
+  // animated curves — the "many signals moving" feel, not one clean readout.
+  const FLOW_COLORS = ['var(--accent)', 'var(--v-verified)', 'var(--v-subjective)', 'var(--v-self)', 'var(--v-uncertain)'];
+  const flows = [];
+  const flowGroup = ns('g');
+  for (let i = 0; i < 6; i++) {
+    const path = ns('path');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', FLOW_COLORS[i % FLOW_COLORS.length]);
+    path.setAttribute('stroke-width', i % 3 === 0 ? '1.4' : '0.8');
+    path.setAttribute('opacity', i % 3 === 0 ? '0.34' : '0.16');
+    flowGroup.appendChild(path);
+    flows.push({
+      el: path,
+      amp: 10 + (i * 7) % 40,
+      freq: 1.4 + i * 0.55,
+      speed: 0.006 + i * 0.0025,
+      phase: i * 1.1,
+      yOffset: ((i % 3) - 1) * 46
+    });
   }
-  svg.appendChild(meshGroup);
+  svg.appendChild(flowGroup);
 
-  // Breathing baseline: a soft sine-ish path that animates gently
-  const base = ns('path');
-  base.setAttribute('stroke', 'var(--ink-dim)');
-  base.setAttribute('stroke-width', '1');
-  base.setAttribute('fill', 'none');
-  base.setAttribute('opacity', '0.35');
-  svg.appendChild(base);
-
-  function baselineD(t) {
-    let d = `M 0 ${MIDY}`;
-    const waves = 5;
-    for (let x = 0; x <= W; x += 8) {
-      const y = MIDY + Math.sin((x / W) * Math.PI * waves + t) * 3.5;
-      d += ` L ${x} ${y}`;
+  function flowD(f, t) {
+    let d = `M 0 ${MIDY + f.yOffset}`;
+    for (let x = 0; x <= W; x += 10) {
+      const y = MIDY + f.yOffset
+        + Math.sin((x / W) * Math.PI * f.freq + t * (f.speed * 90) + f.phase) * f.amp
+        + Math.sin((x / W) * Math.PI * f.freq * 2.3 + t * (f.speed * 60)) * (f.amp * 0.25);
+      d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
     }
     return d;
   }
 
-  // Pulse path connecting the spike peaks (EKG-like)
-  const pulse = ns('path');
-  pulse.setAttribute('stroke', 'var(--accent)');
-  pulse.setAttribute('stroke-width', '2');
-  pulse.setAttribute('fill', 'none');
-  pulse.setAttribute('stroke-linejoin', 'round');
-  pulse.setAttribute('filter', 'url(#glow)');
-  let pd = `M ${margin - 30} ${MIDY}`;
-  points.forEach((p, i) => {
-    const prevX = i === 0 ? margin - 30 : points[i - 1].x;
-    const settle = prevX + (p.x - prevX) * 0.55;
-    pd += ` L ${settle} ${MIDY} L ${p.x - 6} ${MIDY} L ${p.x} ${p.y - p.amp} L ${p.x + 6} ${MIDY}`;
-  });
-  pd += ` L ${W - margin + 30} ${MIDY}`;
-  pulse.setAttribute('d', pd);
-  svg.appendChild(pulse);
-
-  // Nodes
+  // Nodes — pulse peaks sit where the record actually happened, riding on top
+  // of the flow, not connected by a rigid line.
   points.forEach((p, i) => {
     const g = ns('g');
-    const glowRing = ns('circle');
-    glowRing.setAttribute('cx', p.x); glowRing.setAttribute('cy', p.y - p.amp);
-    glowRing.setAttribute('r', 10); glowRing.setAttribute('fill', p.color);
-    glowRing.setAttribute('opacity', '0.18');
-    glowRing.setAttribute('class', 'breathe-ring');
-    glowRing.style.animationDelay = `${i * 0.15}s`;
+    g.setAttribute('class', 'node-g');
+
+    const ring = ns('circle');
+    ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y - p.amp * 0.7);
+    ring.setAttribute('r', 14); ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', p.color); ring.setAttribute('stroke-width', '1.5');
+    ring.setAttribute('class', 'pulse-ring');
+    ring.style.animationDelay = `${(i * 0.31) % 1.1}s`;
 
     const dot = ns('circle');
-    dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y - p.amp);
+    dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y - p.amp * 0.7);
     dot.setAttribute('r', 5); dot.setAttribute('fill', p.color);
-    dot.setAttribute('stroke', 'var(--paper-panel)'); dot.setAttribute('stroke-width', '1.5');
+    dot.setAttribute('filter', 'url(#glow)');
+    dot.setAttribute('class', 'pulse-dot');
+    dot.style.animationDelay = `${(i * 0.31) % 1.1}s`;
     dot.style.cursor = 'pointer';
 
-    g.appendChild(glowRing);
+    g.appendChild(ring);
     g.appendChild(dot);
     svg.appendChild(g);
 
-    g.addEventListener('mouseenter', (ev) => {
+    g.addEventListener('mouseenter', () => {
       tip.querySelector('.t-claim').textContent = p.r.claim;
       const d = new Date(p.r.ts);
       const src = p.r.source ? ` · ${p.r.source}` : '';
@@ -238,24 +223,24 @@ async function main() {
       const svgRect = svg.getBoundingClientRect();
       const scale = svgRect.width / W;
       tip.style.left = (svgRect.left - rect.left + p.x * scale) + 'px';
-      tip.style.top = (svgRect.top - rect.top + (p.y - p.amp) * scale - 10) + 'px';
+      tip.style.top = (svgRect.top - rect.top + (p.y - p.amp * 0.7) * scale - 14) + 'px';
       tip.classList.add('show');
     });
     g.addEventListener('mouseleave', () => tip.classList.remove('show'));
   });
 
-  // Animate baseline breathing
+  // Animate the flow lines continuously
   let t = 0;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduceMotion) {
     function tick() {
-      t += 0.012;
-      base.setAttribute('d', baselineD(t));
+      t += 1;
+      for (const f of flows) f.el.setAttribute('d', flowD(f, t));
       requestAnimationFrame(tick);
     }
     tick();
   } else {
-    base.setAttribute('d', baselineD(0));
+    for (const f of flows) f.el.setAttribute('d', flowD(f, 0));
   }
 }
 
@@ -263,16 +248,31 @@ main();
 </script>
 
 <style>
-.breathe-ring {
-  animation: breathe 2.6s ease-in-out infinite;
+/* Heartbeat pulse: quick expand (systole), slower settle (diastole) — not a
+   symmetric slow breathe. cubic-bezier front-loads the expansion. */
+.pulse-dot {
   transform-origin: center;
   transform-box: fill-box;
+  animation: heartbeat-dot 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.14; }
-  50% { transform: scale(1.6); opacity: 0.28; }
+.pulse-ring {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: heartbeat-ring 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes heartbeat-dot {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.35); }
+  28% { transform: scale(0.96); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes heartbeat-ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  14% { transform: scale(1.9); opacity: 0.05; }
+  100% { transform: scale(1); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .breathe-ring { animation: none; }
+  .pulse-dot, .pulse-ring { animation: none; }
 }
 </style>
