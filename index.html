@@ -115,6 +115,21 @@ h1 {
   border-radius: 8px; transition: background 0.15s;
 }
 .entry:hover { background: var(--paper-panel); }
+/* safety_trigger is a system event, not another tag — it has to visibly
+   interrupt the timeline's rhythm rather than sit quietly inside a card. */
+.entry.has-safety {
+  border-top: 2px solid var(--v-wrong); border-bottom: 2px solid var(--v-wrong);
+  margin: 4px 0;
+}
+.safety-break {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 10px;
+  margin: -26px -18px 16px; padding: 7px 18px;
+  background: var(--v-wrong-bg); color: var(--v-wrong);
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.safety-break .glyph { font-size: 0.9em; }
 .entry-meta {
   font-family: var(--mono); font-size: 0.64rem; color: var(--ink-dim); line-height: 1.7;
   opacity: 0.85;
@@ -157,15 +172,6 @@ footer.note code {
 }
 .emo .label { opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; }
 .emo .word { font-style: italic; color: var(--ink); font-family: var(--body-font); }
-.safety {
-  display: inline-flex; align-items: baseline; gap: 6px;
-  font-family: var(--mono); font-size: 0.72rem;
-  color: var(--v-wrong); border-left: 3px solid var(--v-wrong);
-  padding: 2px 0 2px 10px; margin-top: 8px;
-}
-.safety .label { opacity: 0.85; text-transform: uppercase; letter-spacing: 0.04em; }
-.safety .word { color: var(--v-wrong); font-family: var(--body-font); }
-
 .lang-toggle {
   position: absolute; top: 56px; right: 24px;
   display: inline-flex; font-family: var(--mono); font-size: 0.7rem;
@@ -295,8 +301,9 @@ function renderRecords() {
   };
   for (const r of sorted) {
     const entry = document.createElement('div');
-    entry.className = `entry ${r.evidence}`;
+    entry.className = `entry ${r.evidence}${r.safety_trigger ? ' has-safety' : ''}`;
     entry.innerHTML = `
+      ${r.safety_trigger ? `<div class="safety-break"><span class="glyph">⚠</span>${t.safetyLabel} — ${r.safety_trigger}</div>` : ''}
       <div class="entry-meta">
         <span class="ts">${fmtTs(r.ts)} UTC</span>
         <span class="channel">${r.channel}</span>
@@ -307,7 +314,6 @@ function renderRecords() {
         <p class="claim">${r.claim}</p>
         <p class="note">${r.note}</p>
         ${r.emotion ? `<div class="emo"><span class="label">${t.emoLabel}</span><span class="word">${r.emotion}</span></div>` : ''}
-        ${r.safety_trigger ? `<div class="safety"><span class="label">${t.safetyLabel}</span><span class="word">${r.safety_trigger}</span></div>` : ''}
       </div>
     `;
     timeline.appendChild(entry);

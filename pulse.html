@@ -281,15 +281,27 @@ function renderSource(sourceName, records) {
       g.appendChild(emoDot);
     }
 
-    // safety-trigger sub-lane: a distinct triangle mark — a system event,
-    // never rendered with the same shape/color as the self-reported emotion tick.
+    // safety-trigger: a structural break in the track, not just a colored
+    // mark — a full-height dashed rule plus a triangle, so the event still
+    // reads as "something interrupted here" in grayscale or a static crop.
     let safetyMark = null;
     if (p.r.safety_trigger) {
+      const breakLine = ns('line');
+      breakLine.setAttribute('x1', p.x); breakLine.setAttribute('x2', p.x);
+      breakLine.setAttribute('y1', 4); breakLine.setAttribute('y2', H - 4);
+      breakLine.setAttribute('stroke', 'var(--v-wrong)');
+      breakLine.setAttribute('stroke-width', '1.5');
+      breakLine.setAttribute('stroke-dasharray', '2 4');
+      breakLine.setAttribute('opacity', '0.6');
+      g.appendChild(breakLine);
+
       safetyMark = ns('path');
-      const s = 6;
+      const s = 7;
       const cx = p.x, cy = SAFETY_Y;
       safetyMark.setAttribute('d', `M ${cx} ${cy - s} L ${cx + s} ${cy + s} L ${cx - s} ${cy + s} Z`);
       safetyMark.setAttribute('fill', 'var(--v-wrong)');
+      safetyMark.setAttribute('stroke', 'var(--paper-panel)');
+      safetyMark.setAttribute('stroke-width', '1.5');
       safetyMark.setAttribute('class', 'safety-tick');
       safetyMark.style.cursor = 'pointer';
       g.appendChild(safetyMark);
