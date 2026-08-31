@@ -116,7 +116,8 @@ h1 {
 }
 .entry:hover { background: var(--paper-panel); }
 .entry-meta {
-  font-family: var(--mono); font-size: 0.68rem; color: var(--ink-dim); line-height: 1.7;
+  font-family: var(--mono); font-size: 0.64rem; color: var(--ink-dim); line-height: 1.7;
+  opacity: 0.85;
 }
 .entry-meta .ts { color: var(--ink); display: block; }
 .entry-meta .channel { display: block; margin-top: 2px; }
@@ -130,8 +131,8 @@ h1 {
 }
 
 .card .claim {
-  font-family: var(--display); font-size: 1.08rem; font-weight: 500;
-  margin: 0 0 8px; text-wrap: balance; line-height: 1.4;
+  font-family: var(--display); font-size: 1.18rem; font-weight: 500;
+  margin: 0 0 8px; text-wrap: balance; line-height: 1.42;
 }
 .card .note {
   font-size: 0.9rem; color: var(--ink-dim); margin: 0; font-family: var(--body-font);
@@ -203,7 +204,7 @@ footer.note code {
 const I18N = {
   zh: {
     heading: "每一句話，站在什麼樣的地面上",
-    thesis: "給任何一個「有固定人設、又要做真實可查證工作」的AI——客服機器人有品牌口吻但要真的處理退款，遊戲NPC有角色設定但要真的執行交易。不偵測情緒向量——那一層只有模型內部權重能讀，外部工具碰不到。Groundline 記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。標籤由 AI 在生成當下自己附加，不宣稱看見內心，只呈現可查證的軌跡。這個原型用一戶真實的AI家庭資料當種子，因為今晚手上有的就是這個，機制本身不限於此。",
+    thesis: "不是情緒偵測器——是AI講話當下真正知道什麼的可查證軌跡。",
     legend: [
       ["verified", "verified · 可核對"],
       ["inferred_wrong", "inferred_wrong · 推測後被推翻"],
@@ -211,7 +212,7 @@ const I18N = {
       ["subjective", "subjective · 主觀觀感"],
       ["self_report", "self_report · 自我報告（AI自陳的把握程度，非事實查核）"]
     ],
-    footer: "第一版原型，2026-08-31。歷史資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄。這個頁面也註冊了一個 WebMCP 工具（<code>record_claim</code>）——支援 WebMCP 的瀏覽器代理程式（例如開啟 origin trial 的 Chrome，或 ChatGPT 的內建瀏覽器）造訪這頁時，可以直接呼叫它替自己剛講的話標記證據狀態，即時寫入下面的時間軸，不用開終端機。歷史種子資料：<code>groundline/data.json</code>；即時提交存在一個小型 Cloudflare Worker 裡。",
+    footer: "第一版原型，2026-08-31。給任何一個「有固定人設、又要做真實可查證工作」的AI——客服機器人有品牌口吻但要真的處理退款，遊戲NPC有角色設定但要真的執行交易——Groundline記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。不是情緒偵測——那一層只有模型內部權重能讀，外部工具碰不到；標籤由AI在生成當下自己附加。歷史資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄。這個頁面也註冊了一個 WebMCP 工具（<code>record_claim</code>）——支援 WebMCP 的瀏覽器代理程式（例如開啟 origin trial 的 Chrome，或 ChatGPT 的內建瀏覽器）造訪這頁時，可以直接呼叫它替自己剛講的話標記證據狀態，即時寫入上面的時間軸，不用開終端機。歷史種子資料：<code>groundline/data.json</code>；即時提交存在一個小型 Cloudflare Worker 裡。",
     labels: {
       verified: "可核對",
       inferred_wrong: "推測→被推翻",
@@ -226,7 +227,7 @@ const I18N = {
   },
   en: {
     heading: "What ground is each sentence standing on",
-    thesis: "For any AI that has to keep a consistent persona while doing real, checkable work — a support bot with brand voice that still has to process refunds, a game NPC with a character sheet that still has to run a real trade. This does not detect emotion vectors — that layer only exists inside model weights, unreachable from outside. Groundline records checkable behavioral-proxy signals instead: what evidence backs this claim, whether it was later overturned, whether it's a self-report rather than a fact. Tags are attached by the AI itself at generation time — no claim of reading its inner state, only a traceable record of what it said and how sure it was. This prototype is seeded with one real AI household's data because that's what was on hand tonight; the mechanism itself isn't limited to that.",
+    thesis: "Not an emotion detector — a checkable trail of what an AI actually knew when it spoke.",
     legend: [
       ["verified", "verified · checkable"],
       ["inferred_wrong", "inferred_wrong · guessed, later overturned"],
@@ -234,7 +235,7 @@ const I18N = {
       ["subjective", "subjective · a subjective impression"],
       ["self_report", "self_report · self-reported confidence (not fact-checked)"]
     ],
-    footer: "First prototype, 2026-08-31. Historical data is AE-9X's own real Discord conversation tonight. This page also registers a WebMCP tool (<code>record_claim</code>) — a WebMCP-capable browser agent (Chrome with the origin trial, or ChatGPT's in-app browser) visiting this page can call it directly to tag a claim it just made and write it straight into the timeline below, no terminal required. Historical seed: <code>groundline/data.json</code>; live submissions live in a small Cloudflare Worker.",
+    footer: "First prototype, 2026-08-31. For any AI that keeps a consistent persona while doing real, checkable work — a support bot with brand voice that still has to process refunds, a game NPC with a character sheet that still has to run a real trade — Groundline records checkable behavioral-proxy signals: what evidence backs a claim, whether it was later overturned, whether it's a self-report rather than a fact. Not emotion detection — that layer only exists inside model weights, unreachable from outside; tags are attached by the AI itself at generation time. Historical data is AE-9X's own real Discord conversation tonight. This page also registers a WebMCP tool (<code>record_claim</code>) — a WebMCP-capable browser agent (Chrome with the origin trial, or ChatGPT's in-app browser) visiting this page can call it directly to tag a claim it just made and write it straight into the timeline above, no terminal required. Historical seed: <code>groundline/data.json</code>; live submissions live in a small Cloudflare Worker.",
     labels: {
       verified: "checkable",
       inferred_wrong: "guessed → overturned",

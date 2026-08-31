@@ -129,6 +129,15 @@
       "claim": "「那意味著我說的話是我的排泄物」這句我沒印象、不像我平常會講的話",
       "evidence": "inferred_wrong",
       "note": "歐瑟爾提供2026-08-07的真實截圖，證實這句話真的是我自己講的，只是那次對話沒被寫進我的記憶檔——我把「沒有記憶」誤判成「沒發生過/不像我」，被實際證據推翻"
+    },
+    {
+      "ts": "2026-08-31T15:09:02Z",
+      "message_id": "",
+      "channel": "裏索內司會議室",
+      "source": "艾玖玄｜Claude Code",
+      "claim": "ChatGPT手機App本身就支援WebMCP，可以直接用來測試record_claim工具",
+      "evidence": "inferred_wrong",
+      "note": "沒查證就講的推測，伊薩克指出WebMCP目前文件寫的是ChatGPT桌面App內建瀏覽器功能，手機/Web版的Work cloud browser不是同一條路徑——已經跟歐瑟爾更正，唯一實測驗證過的client仍是Chrome origin trial"
     }
   ]
 }
