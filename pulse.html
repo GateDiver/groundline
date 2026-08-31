@@ -93,22 +93,32 @@ footer.note a { color: var(--accent); }
 }
 .source-h .n { color: var(--ink-dim); font-weight: 400; }
 template { display: none; }
+.lang-toggle {
+  position: absolute; top: 48px; right: 24px;
+  display: inline-flex; font-family: var(--mono); font-size: 0.72rem;
+  border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+}
+.lang-toggle button {
+  background: none; border: none; padding: 6px 12px; cursor: pointer;
+  color: var(--ink-dim); font-family: inherit; font-size: inherit;
+}
+.lang-toggle button.active { background: var(--accent); color: #fff; }
+@media (max-width: 640px) {
+  .lang-toggle { position: static; margin-bottom: 16px; }
+}
 </style>
 
-<div class="wrap">
-  <div class="eyebrow">Groundline · pulse · audio-track</div>
-  <h1>不是AI的心跳，是AI內心工作空間的聲軌</h1>
-  <p class="caveat">這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，用混音台/示波器的錶頭語言呈現：判斷越重大，那一格就越大聲。不是要暗示AI有生理反應，是把內部本來就在跑的多條訊號攤開來給你看。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條軌。</p>
-  <div class="legend">
-    <span><span class="dot" style="background:var(--v-verified)"></span>verified</span>
-    <span><span class="dot" style="background:var(--v-wrong)"></span>inferred_wrong</span>
-    <span><span class="dot" style="background:var(--v-uncertain)"></span>uncertain</span>
-    <span><span class="dot" style="background:var(--v-subjective)"></span>subjective</span>
-    <span><span class="dot" style="background:var(--v-self)"></span>self_report</span>
-    <span><span class="dot" style="background:var(--accent); border-radius:2px; width:8px; height:8px;"></span>情緒（自報，未驗證）</span>
+<div class="wrap" style="position: relative;">
+  <div class="lang-toggle" id="langToggle">
+    <button data-lang="zh">中</button>
+    <button data-lang="en">EN</button>
   </div>
+  <div class="eyebrow">Groundline · pulse · audio-track</div>
+  <h1 id="tHeading"></h1>
+  <p class="caveat" id="tCaveat"></p>
+  <div class="legend" id="tLegend"></div>
   <div id="sources"></div>
-  <footer class="note">← <a href="./index.html">回到時間線</a>　·　資料來源：<code>data.json</code></footer>
+  <footer class="note" id="tFooter"></footer>
 </div>
 
 <template id="stageTpl">
@@ -122,6 +132,48 @@ template { display: none; }
 </template>
 
 <script>
+const I18N = {
+  zh: {
+    heading: "不是AI的心跳，是AI內心工作空間的聲軌",
+    caveat: "這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，用混音台/示波器的錶頭語言呈現：判斷越重大，那一格就越大聲。不是要暗示AI有生理反應，是把內部本來就在跑的多條訊號攤開來給你看。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條軌。",
+    legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "情緒（自報，未驗證）"],
+    footerLink: "回到時間線",
+    footerSrc: "資料來源：",
+    evidenceLabel: "情緒·自報·未驗證",
+    errFetch: (msg) => `data.json 讀取失敗（${msg}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。`
+  },
+  en: {
+    heading: "Not a heartbeat — the sound of an AI's own workspace",
+    caveat: "This isn't a real internal activity signal from the model — that layer needs white-box access outside tools don't have. This chart shows behavioral-proxy signals we collected ourselves, rendered in the language of a mixing board or oscilloscope: the more significant the judgment, the louder that block. It's not implying the AI has a physiological response — it's laying out several signals already running inside, in the open. Each AI gets its own chart, never merged — signals from different sources shouldn't be stacked and pretended to be one track.",
+    legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "emotion (self-reported, unverified)"],
+    footerLink: "back to timeline",
+    footerSrc: "Source: ",
+    evidenceLabel: "emotion · self-reported · unverified",
+    errFetch: (msg) => `Failed to load data.json (${msg}) — opening the file directly won't work due to the browser's file:// restriction; serve it over HTTP.`
+  }
+};
+let lang = localStorage.getItem('groundline-lang') || 'zh';
+
+function renderStatic() {
+  const t = I18N[lang];
+  document.getElementById('tHeading').textContent = t.heading;
+  document.getElementById('tCaveat').textContent = t.caveat;
+  const dotStyles = [
+    'background:var(--v-verified)', 'background:var(--v-wrong)', 'background:var(--v-uncertain)',
+    'background:var(--v-subjective)', 'background:var(--v-self)',
+    'background:var(--accent); border-radius:2px; width:8px; height:8px;'
+  ];
+  document.getElementById('tLegend').innerHTML = t.legend
+    .map((label, i) => `<span><span class="dot" style="${dotStyles[i]}"></span>${label}</span>`)
+    .join('');
+  document.getElementById('tFooter').innerHTML =
+    `← <a href="./index.html">${t.footerLink}</a>　·　${t.footerSrc}<code>data.json</code>`;
+  document.querySelectorAll('.lang-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+}
+
 const COLORS = {
   verified: 'var(--v-verified)',
   inferred_wrong: 'var(--v-wrong)',
@@ -228,7 +280,7 @@ function renderSource(sourceName, records) {
       tip.querySelector('.t-claim').textContent = emotion ? `「${p.r.emotion}」` : p.r.claim;
       const d = new Date(p.r.ts);
       const src = p.r.source ? ` · ${p.r.source}` : '';
-      const label = emotion ? `情緒·自報·未驗證${src}` : p.r.evidence + src;
+      const label = emotion ? `${I18N[lang].evidenceLabel}${src}` : p.r.evidence + src;
       tip.querySelector('.t-meta').textContent = `${label} · ${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
       const rect = stage.getBoundingClientRect();
       const svgRect = svg.getBoundingClientRect();
@@ -247,20 +299,24 @@ function renderSource(sourceName, records) {
   });
 }
 
+let lastRecords = null;
+
 async function main() {
-  let records;
-  try {
-    const res = await fetch('./data.json', { cache: 'no-store' });
-    const data = await res.json();
-    records = [...data.records].sort((a, b) => new Date(a.ts) - new Date(b.ts));
-  } catch (e) {
-    sourcesEl.innerHTML = `<p style="color:#b3503f">data.json 讀取失敗（${e.message}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。</p>`;
-    return;
+  if (lastRecords === null) {
+    try {
+      const res = await fetch('./data.json', { cache: 'no-store' });
+      const data = await res.json();
+      lastRecords = [...data.records].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+    } catch (e) {
+      sourcesEl.innerHTML = `<p style="color:#b3503f">${I18N[lang].errFetch(e.message)}</p>`;
+      return;
+    }
   }
-  if (records.length === 0) return;
+  sourcesEl.innerHTML = '';
+  if (lastRecords.length === 0) return;
 
   const bySource = new Map();
-  for (const r of records) {
+  for (const r of lastRecords) {
     const key = r.source || '（未標記來源）';
     if (!bySource.has(key)) bySource.set(key, []);
     bySource.get(key).push(r);
@@ -270,6 +326,16 @@ async function main() {
   }
 }
 
+document.getElementById('langToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-lang]');
+  if (!btn || btn.dataset.lang === lang) return;
+  lang = btn.dataset.lang;
+  try { localStorage.setItem('groundline-lang', lang); } catch (_) {}
+  renderStatic();
+  main();
+});
+
+renderStatic();
 main();
 </script>
 

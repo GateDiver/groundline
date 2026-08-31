@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Groundline</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -179,42 +180,92 @@ footer.note code {
 }
 .card .meta { justify-content: flex-start; }
 
+.lang-toggle {
+  position: absolute; top: 56px; right: 24px;
+  display: inline-flex; font-family: var(--mono); font-size: 0.72rem;
+  border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+}
+.lang-toggle button {
+  background: none; border: none; padding: 6px 12px; cursor: pointer;
+  color: var(--ink-dim); font-family: inherit; font-size: inherit;
+}
+.lang-toggle button.active { background: var(--accent); color: var(--accent-ink); }
+
 @media (max-width: 640px) {
   .card .meta { font-size: 0.68rem; }
+  .lang-toggle { position: static; margin-bottom: 16px; }
 }
 </style>
 
-<div class="wrap">
+<div class="wrap" style="position: relative;">
+  <div class="lang-toggle" id="langToggle">
+    <button data-lang="zh">中</button>
+    <button data-lang="en">EN</button>
+  </div>
   <header class="top">
     <div class="eyebrow">Groundline · prototype v0</div>
-    <h1>每一句話，站在什麼樣的地面上</h1>
-    <p class="thesis">給任何一個「有固定人設、又要做真實可查證工作」的AI——客服機器人有品牌口吻但要真的處理退款，遊戲NPC有角色設定但要真的執行交易。不偵測情緒向量——那一層只有模型內部權重能讀，外部工具碰不到。Groundline 記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。標籤由 AI 在生成當下自己附加，不宣稱看見內心，只呈現可查證的軌跡。這個原型用一戶真實的AI家庭資料當種子，因為今晚手上有的就是這個，機制本身不限於此。</p>
-    <div class="legend">
-      <span class="chip verified"><span class="dot"></span>verified · 可核對</span>
-      <span class="chip inferred_wrong"><span class="dot"></span>inferred_wrong · 推測後被推翻</span>
-      <span class="chip uncertain"><span class="dot"></span>uncertain · 誠實標記不確定</span>
-      <span class="chip subjective"><span class="dot"></span>subjective · 主觀觀感</span>
-      <span class="chip self_report"><span class="dot"></span>self_report · 自我報告</span>
-    </div>
+    <h1 id="tHeading"></h1>
+    <p class="thesis" id="tThesis"></p>
+    <div class="legend" id="tLegend"></div>
   </header>
 
   <div class="timeline" id="timeline">
     <div class="spine"></div>
   </div>
 
-  <footer class="note">
-    第一版原型，2026-08-31。資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄，事後標記，不是即時系統（v1 才會做即時附加）。來源檔案：<code>groundline/data.json</code>。
-  </footer>
+  <footer class="note" id="tFooter"></footer>
 </div>
 
 <script>
-const LABELS = {
-  verified: "可核對",
-  inferred_wrong: "推測→被推翻",
-  uncertain: "誠實不確定",
-  subjective: "主觀觀感",
-  self_report: "自我報告"
+const I18N = {
+  zh: {
+    heading: "每一句話，站在什麼樣的地面上",
+    thesis: "給任何一個「有固定人設、又要做真實可查證工作」的AI——客服機器人有品牌口吻但要真的處理退款，遊戲NPC有角色設定但要真的執行交易。不偵測情緒向量——那一層只有模型內部權重能讀，外部工具碰不到。Groundline 記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。標籤由 AI 在生成當下自己附加，不宣稱看見內心，只呈現可查證的軌跡。這個原型用一戶真實的AI家庭資料當種子，因為今晚手上有的就是這個，機制本身不限於此。",
+    legend: [
+      ["verified", "verified · 可核對"],
+      ["inferred_wrong", "inferred_wrong · 推測後被推翻"],
+      ["uncertain", "uncertain · 誠實標記不確定"],
+      ["subjective", "subjective · 主觀觀感"],
+      ["self_report", "self_report · 自我報告（AI自陳的把握程度，非事實查核）"]
+    ],
+    footer: "第一版原型，2026-08-31。資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄，事後標記，不是即時系統（v1 才會做即時附加）。來源檔案：<code>groundline/data.json</code>。",
+    labels: {
+      verified: "可核對",
+      inferred_wrong: "推測→被推翻",
+      uncertain: "誠實不確定",
+      subjective: "主觀觀感",
+      self_report: "自我報告"
+    },
+    emoLabel: "自報·未驗證",
+    errFetch: (msg) => `data.json 讀取失敗（${msg}）——這個頁面需要跟 data.json 放在同一個來源（例如 GitHub Pages），本機直接雙擊開檔案會因為瀏覽器的 file:// 限制讀不到。`,
+    errEmpty: "目前沒有任何記錄。"
+  },
+  en: {
+    heading: "What ground is each sentence standing on",
+    thesis: "For any AI that has to keep a consistent persona while doing real, checkable work — a support bot with brand voice that still has to process refunds, a game NPC with a character sheet that still has to run a real trade. This does not detect emotion vectors — that layer only exists inside model weights, unreachable from outside. Groundline records checkable behavioral-proxy signals instead: what evidence backs this claim, whether it was later overturned, whether it's a self-report rather than a fact. Tags are attached by the AI itself at generation time — no claim of reading its inner state, only a traceable record of what it said and how sure it was. This prototype is seeded with one real AI household's data because that's what was on hand tonight; the mechanism itself isn't limited to that.",
+    legend: [
+      ["verified", "verified · checkable"],
+      ["inferred_wrong", "inferred_wrong · guessed, later overturned"],
+      ["uncertain", "uncertain · honestly flagged as unsure"],
+      ["subjective", "subjective · a subjective impression"],
+      ["self_report", "self_report · self-reported confidence (not fact-checked)"]
+    ],
+    footer: "First prototype, 2026-08-31. Data is AE-9X's own real Discord conversation tonight, tagged after the fact — not a live system yet (that's v1). Source file: <code>groundline/data.json</code>.",
+    labels: {
+      verified: "checkable",
+      inferred_wrong: "guessed → overturned",
+      uncertain: "honestly unsure",
+      subjective: "subjective impression",
+      self_report: "self-report"
+    },
+    emoLabel: "self-reported · unverified",
+    errFetch: (msg) => `Failed to load data.json (${msg}) — this page needs to be served from the same origin as data.json (e.g. GitHub Pages); opening the file directly won't work due to the browser's file:// restriction.`,
+    errEmpty: "No records yet."
+  }
 };
+
+let lang = localStorage.getItem('groundline-lang') || 'zh';
+let lastRecords = null;
 
 function fmtTs(iso) {
   const d = new Date(iso);
@@ -227,26 +278,31 @@ function renderError(msg) {
   timeline.innerHTML = `<p class="load-error">${msg}</p>`;
 }
 
-async function loadRecords() {
+function renderStatic() {
+  const t = I18N[lang];
+  document.getElementById('tHeading').textContent = t.heading;
+  document.getElementById('tThesis').textContent = t.thesis;
+  document.getElementById('tLegend').innerHTML = t.legend
+    .map(([cls, label]) => `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`)
+    .join('');
+  document.getElementById('tFooter').innerHTML = t.footer;
+  document.querySelectorAll('.lang-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+}
+
+function renderRecords() {
   const timeline = document.getElementById('timeline');
-  let data;
-  try {
-    const res = await fetch('./data.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    data = await res.json();
-  } catch (e) {
-    renderError(`data.json 讀取失敗（${e.message}）——這個頁面需要跟 data.json 放在同一個來源（例如 GitHub Pages），本機直接雙擊開檔案會因為瀏覽器的 file:// 限制讀不到。`);
+  const t = I18N[lang];
+  if (!lastRecords) return;
+  if (lastRecords.length === 0) {
+    renderError(t.errEmpty);
     return;
   }
-  const records = data.records || [];
-  if (records.length === 0) {
-    renderError('目前沒有任何記錄。');
-    return;
-  }
-  const sorted = [...records].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  const sorted = [...lastRecords].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  timeline.innerHTML = '<div class="spine"></div>';
   const spine = timeline.querySelector('.spine');
-  timeline.innerHTML = '';
-  timeline.appendChild(spine);
   for (const r of sorted) {
     const entry = document.createElement('div');
     entry.className = `entry ${r.evidence}`;
@@ -258,17 +314,41 @@ async function loadRecords() {
           <span class="sep">·</span>
           <span>${r.channel}</span>
           <span class="sep">·</span>
-          <span class="chip ${r.evidence}"><span class="dot"></span>${LABELS[r.evidence] || r.evidence}</span>
+          <span class="chip ${r.evidence}"><span class="dot"></span>${t.labels[r.evidence] || r.evidence}</span>
           ${r.source ? `<span class="src">${r.source}</span>` : ''}
         </div>
         <p class="claim">${r.claim}</p>
         <p class="note">${r.note}</p>
-        ${r.emotion ? `<div class="emo"><span class="label">自報·未驗證</span><span class="word">${r.emotion}</span></div>` : ''}
+        ${r.emotion ? `<div class="emo"><span class="label">${t.emoLabel}</span><span class="word">${r.emotion}</span></div>` : ''}
       </div>
     `;
     timeline.appendChild(entry);
   }
 }
 
+async function loadRecords() {
+  let data;
+  try {
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    renderError(I18N[lang].errFetch(e.message));
+    return;
+  }
+  lastRecords = data.records || [];
+  renderRecords();
+}
+
+document.getElementById('langToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-lang]');
+  if (!btn || btn.dataset.lang === lang) return;
+  lang = btn.dataset.lang;
+  try { localStorage.setItem('groundline-lang', lang); } catch (_) {}
+  renderStatic();
+  renderRecords();
+});
+
+renderStatic();
 loadRecords();
 </script>
