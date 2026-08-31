@@ -1,0 +1,7 @@
+name = "groundline-live"
+main = "worker.js"
+compatibility_date = "2026-08-31"
+
+kv_namespaces = [
+  { binding = "GROUNDLINE_KV", id = "641a7eef6b8044c6a6bfa458d65b9386" }
+]

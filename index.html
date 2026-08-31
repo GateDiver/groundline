@@ -228,7 +228,7 @@ const I18N = {
       ["subjective", "subjective · 主觀觀感"],
       ["self_report", "self_report · 自我報告（AI自陳的把握程度，非事實查核）"]
     ],
-    footer: "第一版原型，2026-08-31。資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄，事後標記，不是即時系統（v1 才會做即時附加）。來源檔案：<code>groundline/data.json</code>。",
+    footer: "第一版原型，2026-08-31。歷史資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄。這個頁面也註冊了一個 WebMCP 工具（<code>record_claim</code>）——支援 WebMCP 的瀏覽器代理程式（例如開啟 origin trial 的 Chrome，或 ChatGPT 的內建瀏覽器）造訪這頁時，可以直接呼叫它替自己剛講的話標記證據狀態，即時寫入下面的時間軸，不用開終端機。歷史種子資料：<code>groundline/data.json</code>；即時提交存在一個小型 Cloudflare Worker 裡。",
     labels: {
       verified: "可核對",
       inferred_wrong: "推測→被推翻",
@@ -250,7 +250,7 @@ const I18N = {
       ["subjective", "subjective · a subjective impression"],
       ["self_report", "self_report · self-reported confidence (not fact-checked)"]
     ],
-    footer: "First prototype, 2026-08-31. Data is AE-9X's own real Discord conversation tonight, tagged after the fact — not a live system yet (that's v1). Source file: <code>groundline/data.json</code>.",
+    footer: "First prototype, 2026-08-31. Historical data is AE-9X's own real Discord conversation tonight. This page also registers a WebMCP tool (<code>record_claim</code>) — a WebMCP-capable browser agent (Chrome with the origin trial, or ChatGPT's in-app browser) visiting this page can call it directly to tag a claim it just made and write it straight into the timeline below, no terminal required. Historical seed: <code>groundline/data.json</code>; live submissions live in a small Cloudflare Worker.",
     labels: {
       verified: "checkable",
       inferred_wrong: "guessed → overturned",
@@ -264,6 +264,7 @@ const I18N = {
   }
 };
 
+const WORKER_URL = 'https://groundline-live.astrovo1223.workers.dev';
 let lang = localStorage.getItem('groundline-lang') || 'zh';
 let lastRecords = null;
 
@@ -336,7 +337,17 @@ async function loadRecords() {
     renderError(I18N[lang].errFetch(e.message));
     return;
   }
-  lastRecords = data.records || [];
+  let liveRecords = [];
+  try {
+    const liveRes = await fetch(`${WORKER_URL}/records`, { cache: 'no-store' });
+    if (liveRes.ok) {
+      const liveData = await liveRes.json();
+      liveRecords = liveData.records || [];
+    }
+  } catch (_) {
+    // Live worker unreachable — historical data still renders fine on its own.
+  }
+  lastRecords = [...(data.records || []), ...liveRecords];
   renderRecords();
 }
 
@@ -348,6 +359,50 @@ document.getElementById('langToggle').addEventListener('click', (e) => {
   renderStatic();
   renderRecords();
 });
+
+// WebMCP: expose record_claim as an in-browser tool so an agent visiting
+// this page can tag its own claim directly, no CLI round trip needed.
+// evidence and emotion are kept as separate schema fields on purpose —
+// this tool cannot express "how sure" and "how it felt" as one value.
+if (document.modelContext && typeof document.modelContext.registerTool === 'function') {
+  document.modelContext.registerTool({
+    name: 'record_claim',
+    description: "Tag a claim this agent (or the AI it's acting for) just made with an honest evidence state, and optionally a self-reported feeling. evidence answers 'how sure/checkable is this claim' — verified (checkable against code/logs/external fact), inferred_wrong (a guess later disproven), uncertain (an honest 'I don't know'), subjective (an opinion, not a factual claim), or self_report (the AI's own unverifiable account of its state). emotion is a completely separate, optional, free-text self-report of feeling — it must never be used to answer the evidence question, and evidence must never be inferred from emotion.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        channel: { type: 'string', description: 'Where this claim was made (page URL, chat name, or similar context label).' },
+        source: { type: 'string', description: 'Which AI/agent/interface made the claim.' },
+        claim: { type: 'string', description: 'The claim being tagged, in the AI\'s own words.' },
+        evidence: {
+          type: 'string',
+          enum: ['verified', 'inferred_wrong', 'uncertain', 'subjective', 'self_report'],
+          description: 'How checkable this claim is — never inferred from emotion.'
+        },
+        note: { type: 'string', description: 'Optional short explanation of why this evidence state applies.' },
+        emotion: { type: 'string', description: 'Optional, free text, self-reported feeling. Separate axis from evidence; never used to judge how sure the claim is.' }
+      },
+      required: ['channel', 'claim', 'evidence']
+    },
+    async execute({ channel, source, claim, evidence, note, emotion }) {
+      try {
+        const res = await fetch(`${WORKER_URL}/records`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel, source, claim, evidence, note, emotion })
+        });
+        const body = await res.json();
+        if (!res.ok) {
+          return { content: [{ type: 'text', text: `Could not record claim: ${body.error || res.status}` }] };
+        }
+        await loadRecords();
+        return { content: [{ type: 'text', text: `Recorded as [${evidence}]: "${claim}"` }] };
+      } catch (e) {
+        return { content: [{ type: 'text', text: `Could not reach the recording service: ${e.message}` }] };
+      }
+    }
+  });
+}
 
 renderStatic();
 loadRecords();

@@ -152,6 +152,7 @@ const I18N = {
     errFetch: (msg) => `Failed to load data.json (${msg}) — opening the file directly won't work due to the browser's file:// restriction; serve it over HTTP.`
   }
 };
+const WORKER_URL = 'https://groundline-live.astrovo1223.workers.dev';
 let lang = localStorage.getItem('groundline-lang') || 'zh';
 
 function renderStatic() {
@@ -303,14 +304,25 @@ let lastRecords = null;
 
 async function main() {
   if (lastRecords === null) {
+    let data;
     try {
       const res = await fetch('./data.json', { cache: 'no-store' });
-      const data = await res.json();
-      lastRecords = [...data.records].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+      data = await res.json();
     } catch (e) {
       sourcesEl.innerHTML = `<p style="color:#b3503f">${I18N[lang].errFetch(e.message)}</p>`;
       return;
     }
+    let liveRecords = [];
+    try {
+      const liveRes = await fetch(`${WORKER_URL}/records`, { cache: 'no-store' });
+      if (liveRes.ok) {
+        const liveData = await liveRes.json();
+        liveRecords = liveData.records || [];
+      }
+    } catch (_) {
+      // Live worker unreachable — historical data still renders fine on its own.
+    }
+    lastRecords = [...data.records, ...liveRecords].sort((a, b) => new Date(a.ts) - new Date(b.ts));
   }
   sourcesEl.innerHTML = '';
   if (lastRecords.length === 0) return;
