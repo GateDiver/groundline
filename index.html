@@ -3,14 +3,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 :root {
-  /* Field-ledger palette: cool stone paper + ink-stamp blue, not the
-     cream/terracotta combo every AI-generated page reaches for. */
-  --paper: #e9e7e0;
-  --paper-panel: #f6f5f1;
-  --ink: #1c1e1a;
-  --ink-dim: #6a6c62;
-  --line: #cfccc0;
-  --accent: #22406b;
+  /* Field-ledger palette: warm stone paper + a deep wine-ink accent —
+     warmer than a corporate navy, but not the cream/terracotta combo
+     every AI-generated page reaches for. */
+  --paper: #ece7dc;
+  --paper-panel: #f8f4ea;
+  --ink: #221e17;
+  --ink-dim: #756e5e;
+  --line: #d8d0be;
+  --accent: #7a3341;
   --accent-ink: #ffffff;
   --v-verified: #35633c;
   --v-verified-bg: #dfe8dd;
@@ -28,13 +29,13 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #151613;
-    --paper-panel: #1c1d19;
-    --ink: #e7e5db;
-    --ink-dim: #93917f;
-    --line: #37372e;
-    --accent: #7d9dc9;
-    --accent-ink: #0d1520;
+    --paper: #17140f;
+    --paper-panel: #201c16;
+    --ink: #ece6d9;
+    --ink-dim: #a29a86;
+    --line: #3c352a;
+    --accent: #d99aa6;
+    --accent-ink: #2a0f16;
     --v-verified: #7fb885; --v-verified-bg: #1e2a1e;
     --v-wrong: #d68f7c; --v-wrong-bg: #2f2019;
     --v-uncertain: #a6a99b; --v-uncertain-bg: #24241e;
@@ -43,13 +44,13 @@
   }
 }
 :root[data-theme="dark"] {
-  --paper: #151613;
-  --paper-panel: #1c1d19;
-  --ink: #e7e5db;
-  --ink-dim: #93917f;
-  --line: #37372e;
-  --accent: #7d9dc9;
-  --accent-ink: #0d1520;
+  --paper: #17140f;
+  --paper-panel: #201c16;
+  --ink: #ece6d9;
+  --ink-dim: #a29a86;
+  --line: #3c352a;
+  --accent: #d99aa6;
+  --accent-ink: #2a0f16;
   --v-verified: #7fb885; --v-verified-bg: #1e2a1e;
   --v-wrong: #d68f7c; --v-wrong-bg: #2f2019;
   --v-uncertain: #a6a99b; --v-uncertain-bg: #24241e;
@@ -57,12 +58,12 @@
   --v-self: #6cc2c9; --v-self-bg: #17282a;
 }
 :root[data-theme="light"] {
-  --paper: #e9e7e0;
-  --paper-panel: #f6f5f1;
-  --ink: #1c1e1a;
-  --ink-dim: #6a6c62;
-  --line: #cfccc0;
-  --accent: #22406b;
+  --paper: #ece7dc;
+  --paper-panel: #f8f4ea;
+  --ink: #221e17;
+  --ink-dim: #756e5e;
+  --line: #d8d0be;
+  --accent: #7a3341;
   --v-verified: #35633c; --v-verified-bg: #dfe8dd;
   --v-wrong: #963d2c; --v-wrong-bg: #ecdcd5;
   --v-uncertain: #545a52; --v-uncertain-bg: #dedcd2;
@@ -110,8 +111,10 @@ h1 {
 .timeline { border-top: 1px solid var(--line); }
 .entry {
   display: grid; grid-template-columns: 168px 1fr; gap: 24px;
-  padding: 22px 0; border-bottom: 1px solid var(--line);
+  padding: 26px 18px; border-bottom: 1px solid var(--line);
+  border-radius: 8px; transition: background 0.15s;
 }
+.entry:hover { background: var(--paper-panel); }
 .entry-meta {
   font-family: var(--mono); font-size: 0.68rem; color: var(--ink-dim); line-height: 1.7;
 }
@@ -165,7 +168,7 @@ footer.note code {
 .lang-toggle {
   position: absolute; top: 56px; right: 24px;
   display: inline-flex; font-family: var(--mono); font-size: 0.7rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
 }
 .lang-toggle button {
   background: none; border: none; padding: 6px 12px; cursor: pointer;

@@ -3,12 +3,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 :root {
-  --paper: #e9e7e0;
-  --paper-panel: #f6f5f1;
-  --ink: #1c1e1a;
-  --ink-dim: #6a6c62;
-  --line: #cfccc0;
-  --accent: #22406b;
+  --paper: #ece7dc;
+  --paper-panel: #f8f4ea;
+  --ink: #221e17;
+  --ink-dim: #756e5e;
+  --line: #d8d0be;
+  --accent: #7a3341;
   --v-verified: #35633c;
   --v-wrong: #963d2c;
   --v-uncertain: #545a52;
@@ -20,25 +20,25 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #151613;
-    --paper-panel: #1c1d19;
-    --ink: #e7e5db;
-    --ink-dim: #93917f;
-    --line: #37372e;
-    --accent: #7d9dc9;
+    --paper: #17140f;
+    --paper-panel: #201c16;
+    --ink: #ece6d9;
+    --ink-dim: #a29a86;
+    --line: #3c352a;
+    --accent: #d99aa6;
     --v-verified: #7fb885; --v-wrong: #d68f7c; --v-uncertain: #a6a99b;
     --v-subjective: #b3a0da; --v-self: #6cc2c9;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #151613; --paper-panel: #1c1d19;
-  --ink: #e7e5db; --ink-dim: #93917f; --line: #37372e; --accent: #7d9dc9;
+  --paper: #17140f; --paper-panel: #201c16;
+  --ink: #ece6d9; --ink-dim: #a29a86; --line: #3c352a; --accent: #d99aa6;
   --v-verified: #7fb885; --v-wrong: #d68f7c; --v-uncertain: #a6a99b;
   --v-subjective: #b3a0da; --v-self: #6cc2c9;
 }
 :root[data-theme="light"] {
-  --paper: #e9e7e0; --paper-panel: #f6f5f1;
-  --ink: #1c1e1a; --ink-dim: #6a6c62; --line: #cfccc0; --accent: #22406b;
+  --paper: #ece7dc; --paper-panel: #f8f4ea;
+  --ink: #221e17; --ink-dim: #756e5e; --line: #d8d0be; --accent: #7a3341;
   --v-verified: #35633c; --v-wrong: #963d2c; --v-uncertain: #545a52;
   --v-subjective: #5f4c85; --v-self: #1e6b73;
 }
@@ -61,7 +61,7 @@ h1 {
   border-left: 2px solid var(--accent); padding-left: 14px;
 }
 .stage {
-  background: var(--paper-panel); border: 1px solid var(--line); border-radius: 4px;
+  background: var(--paper-panel); border: 1px solid var(--line); border-radius: 10px;
   padding: 8px 8px 0; overflow: hidden; position: relative;
 }
 svg { display: block; width: 100%; height: auto; }
@@ -94,7 +94,7 @@ template { display: none; }
 .lang-toggle {
   position: absolute; top: 48px; right: 24px;
   display: inline-flex; font-family: var(--mono); font-size: 0.72rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
 }
 .lang-toggle button {
   background: none; border: none; padding: 6px 12px; cursor: pointer;
