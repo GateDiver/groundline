@@ -1,48 +1,46 @@
 <meta charset="utf-8">
 <title>Groundline · Pulse</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 :root {
-  --ground-950: #0d0f14;
-  --ground-900: #12141b;
-  --paper: #f3ecdc;
-  --paper-panel: #ffffff;
-  --ink: #221c11;
-  --ink-dim: #6b6152;
-  --line: #ddd2ba;
-  --accent: #a05f26;
-  --v-verified: #3f7a4a;
-  --v-wrong: #b3503f;
-  --v-uncertain: #5b6472;
-  --v-subjective: #7a5aa8;
-  --v-self: #2e7d8a;
+  --paper: #e9e7e0;
+  --paper-panel: #f6f5f1;
+  --ink: #1c1e1a;
+  --ink-dim: #6a6c62;
+  --line: #cfccc0;
+  --accent: #22406b;
+  --v-verified: #35633c;
+  --v-wrong: #963d2c;
+  --v-uncertain: #545a52;
+  --v-subjective: #5f4c85;
+  --v-self: #1e6b73;
   --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
   --display: 'Fraunces', Georgia, serif;
-  --body-font: 'Work Sans', -apple-system, 'Noto Sans TC', sans-serif;
+  --body-font: 'Source Serif 4', Georgia, 'Noto Serif TC', serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: var(--ground-950);
-    --paper-panel: var(--ground-900);
-    --ink: #ede4d2;
-    --ink-dim: #a89a80;
-    --line: #2c2b30;
-    --accent: #d3944f;
-    --v-verified: #6fbf7c; --v-wrong: #e08672; --v-uncertain: #9aa4b2;
-    --v-subjective: #b39ce0; --v-self: #5fc4d1;
+    --paper: #151613;
+    --paper-panel: #1c1d19;
+    --ink: #e7e5db;
+    --ink-dim: #93917f;
+    --line: #37372e;
+    --accent: #7d9dc9;
+    --v-verified: #7fb885; --v-wrong: #d68f7c; --v-uncertain: #a6a99b;
+    --v-subjective: #b3a0da; --v-self: #6cc2c9;
   }
 }
 :root[data-theme="dark"] {
-  --paper: var(--ground-950); --paper-panel: var(--ground-900);
-  --ink: #ede4d2; --ink-dim: #a89a80; --line: #2c2b30; --accent: #d3944f;
-  --v-verified: #6fbf7c; --v-wrong: #e08672; --v-uncertain: #9aa4b2;
-  --v-subjective: #b39ce0; --v-self: #5fc4d1;
+  --paper: #151613; --paper-panel: #1c1d19;
+  --ink: #e7e5db; --ink-dim: #93917f; --line: #37372e; --accent: #7d9dc9;
+  --v-verified: #7fb885; --v-wrong: #d68f7c; --v-uncertain: #a6a99b;
+  --v-subjective: #b3a0da; --v-self: #6cc2c9;
 }
 :root[data-theme="light"] {
-  --paper: #f3ecdc; --paper-panel: #ffffff;
-  --ink: #221c11; --ink-dim: #6b6152; --line: #ddd2ba; --accent: #a05f26;
-  --v-verified: #3f7a4a; --v-wrong: #b3503f; --v-uncertain: #5b6472;
-  --v-subjective: #7a5aa8; --v-self: #2e7d8a;
+  --paper: #e9e7e0; --paper-panel: #f6f5f1;
+  --ink: #1c1e1a; --ink-dim: #6a6c62; --line: #cfccc0; --accent: #22406b;
+  --v-verified: #35633c; --v-wrong: #963d2c; --v-uncertain: #545a52;
+  --v-subjective: #5f4c85; --v-self: #1e6b73;
 }
 * { box-sizing: border-box; }
 body {
@@ -63,7 +61,7 @@ h1 {
   border-left: 2px solid var(--accent); padding-left: 14px;
 }
 .stage {
-  background: var(--paper-panel); border: 1px solid var(--line); border-radius: 16px;
+  background: var(--paper-panel); border: 1px solid var(--line); border-radius: 4px;
   padding: 8px 8px 0; overflow: hidden; position: relative;
 }
 svg { display: block; width: 100%; height: auto; }
@@ -76,7 +74,7 @@ svg { display: block; width: 100%; height: auto; }
 .tip {
   position: absolute; pointer-events: none; opacity: 0; transition: opacity 0.15s;
   background: var(--ink); color: var(--paper); font-family: var(--body-font);
-  font-size: 0.78rem; padding: 8px 12px; border-radius: 8px; max-width: 280px;
+  font-size: 0.78rem; padding: 8px 12px; border-radius: 3px; max-width: 280px;
   transform: translate(-50%, -100%); z-index: 5;
 }
 .tip.show { opacity: 1; }
@@ -96,7 +94,7 @@ template { display: none; }
 .lang-toggle {
   position: absolute; top: 48px; right: 24px;
   display: inline-flex; font-family: var(--mono); font-size: 0.72rem;
-  border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+  border: 1px solid var(--line);
 }
 .lang-toggle button {
   background: none; border: none; padding: 6px 12px; cursor: pointer;
