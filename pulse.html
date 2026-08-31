@@ -136,19 +136,21 @@ const I18N = {
   zh: {
     heading: "不是AI的心跳，是AI內心工作空間的聲軌",
     caveat: "這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，用混音台/示波器的錶頭語言呈現：判斷越重大，那一格就越大聲。不是要暗示AI有生理反應，是把內部本來就在跑的多條訊號攤開來給你看。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條軌。",
-    legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "情緒（自報，未驗證）"],
+    legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "情緒（自報，未驗證）", "安全層觸發（系統事件）"],
     footerLink: "回到時間線",
     footerSrc: "資料來源：",
     evidenceLabel: "情緒·自報·未驗證",
+    safetyLabel: "安全層觸發·系統事件",
     errFetch: (msg) => `data.json 讀取失敗（${msg}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。`
   },
   en: {
     heading: "Not a heartbeat — the sound of an AI's own workspace",
     caveat: "This isn't a real internal activity signal from the model — that layer needs white-box access outside tools don't have. This chart shows behavioral-proxy signals we collected ourselves, rendered in the language of a mixing board or oscilloscope: the more significant the judgment, the louder that block. It's not implying the AI has a physiological response — it's laying out several signals already running inside, in the open. Each AI gets its own chart, never merged — signals from different sources shouldn't be stacked and pretended to be one track.",
-    legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "emotion (self-reported, unverified)"],
+    legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "emotion (self-reported, unverified)", "safety-trigger (system event)"],
     footerLink: "back to timeline",
     footerSrc: "Source: ",
     evidenceLabel: "emotion · self-reported · unverified",
+    safetyLabel: "safety-layer trigger · system event",
     errFetch: (msg) => `Failed to load data.json (${msg}) — opening the file directly won't work due to the browser's file:// restriction; serve it over HTTP.`
   }
 };
@@ -162,7 +164,8 @@ function renderStatic() {
   const dotStyles = [
     'background:var(--v-verified)', 'background:var(--v-wrong)', 'background:var(--v-uncertain)',
     'background:var(--v-subjective)', 'background:var(--v-self)',
-    'background:var(--accent); border-radius:2px; width:8px; height:8px;'
+    'background:var(--accent); border-radius:2px; width:8px; height:8px;',
+    'background:var(--v-wrong); clip-path:polygon(50% 0%, 0% 100%, 100% 100%); border-radius:0; width:9px; height:9px;'
   ];
   document.getElementById('tLegend').innerHTML = t.legend
     .map((label, i) => `<span><span class="dot" style="${dotStyles[i]}"></span>${label}</span>`)
@@ -187,7 +190,7 @@ const AMP = { verified: 34, inferred_wrong: 90, uncertain: 20, subjective: 52, s
 
 const sourcesEl = document.getElementById('sources');
 const tpl = document.getElementById('stageTpl');
-const W = 1200, H = 300, MIDY = 150, EMO_Y = 258;
+const W = 1200, H = 340, MIDY = 150, EMO_Y = 258, SAFETY_Y = 310;
 
 function ns(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
@@ -240,6 +243,11 @@ function renderSource(sourceName, records) {
   emoLane.setAttribute('class', 'lane-label'); emoLane.textContent = 'self-report';
   svg.appendChild(emoLane);
 
+  const safetyLane = ns('text');
+  safetyLane.setAttribute('x', 6); safetyLane.setAttribute('y', SAFETY_Y + 14);
+  safetyLane.setAttribute('class', 'lane-label'); safetyLane.textContent = 'safety-trigger';
+  svg.appendChild(safetyLane);
+
   // Main track — a waveform meter, one symmetric bar per record. Height is
   // the "loudness": how significant the judgment was, not an emotion signal.
   points.forEach((p, i) => {
@@ -275,27 +283,49 @@ function renderSource(sourceName, records) {
       g.appendChild(emoDot);
     }
 
+    // safety-trigger sub-lane: a distinct triangle mark — a system event,
+    // never rendered with the same shape/color as the self-reported emotion tick.
+    let safetyMark = null;
+    if (p.r.safety_trigger) {
+      safetyMark = ns('path');
+      const s = 6;
+      const cx = p.x, cy = SAFETY_Y;
+      safetyMark.setAttribute('d', `M ${cx} ${cy - s} L ${cx + s} ${cy + s} L ${cx - s} ${cy + s} Z`);
+      safetyMark.setAttribute('fill', 'var(--v-wrong)');
+      safetyMark.setAttribute('class', 'safety-tick');
+      safetyMark.style.cursor = 'pointer';
+      g.appendChild(safetyMark);
+    }
+
     svg.appendChild(g);
 
-    const showTip = (emotion) => {
-      tip.querySelector('.t-claim').textContent = emotion ? `「${p.r.emotion}」` : p.r.claim;
+    const showTip = (kind) => {
+      const isEmo = kind === 'emotion', isSafety = kind === 'safety';
+      tip.querySelector('.t-claim').textContent =
+        isEmo ? `「${p.r.emotion}」` : isSafety ? `⚠ ${p.r.safety_trigger}` : p.r.claim;
       const d = new Date(p.r.ts);
       const src = p.r.source ? ` · ${p.r.source}` : '';
-      const label = emotion ? `${I18N[lang].evidenceLabel}${src}` : p.r.evidence + src;
+      const label = isEmo ? `${I18N[lang].evidenceLabel}${src}`
+        : isSafety ? `${I18N[lang].safetyLabel}${src}`
+        : p.r.evidence + src;
       tip.querySelector('.t-meta').textContent = `${label} · ${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
       const rect = stage.getBoundingClientRect();
       const svgRect = svg.getBoundingClientRect();
       const scale = svgRect.width / W;
-      const ty = emotion ? EMO_Y - 12 : MIDY - p.amp - 10;
+      const ty = isEmo ? EMO_Y - 12 : isSafety ? SAFETY_Y - 12 : MIDY - p.amp - 10;
       tip.style.left = (svgRect.left - rect.left + p.x * scale) + 'px';
       tip.style.top = (svgRect.top - rect.top + ty * scale) + 'px';
       tip.classList.add('show');
     };
-    bar.addEventListener('mouseenter', () => showTip(false));
+    bar.addEventListener('mouseenter', () => showTip('evidence'));
     bar.addEventListener('mouseleave', () => tip.classList.remove('show'));
     if (emoDot) {
-      emoDot.addEventListener('mouseenter', () => showTip(true));
+      emoDot.addEventListener('mouseenter', () => showTip('emotion'));
       emoDot.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    }
+    if (safetyMark) {
+      safetyMark.addEventListener('mouseenter', () => showTip('safety'));
+      safetyMark.addEventListener('mouseleave', () => tip.classList.remove('show'));
     }
   });
 }
@@ -374,11 +404,24 @@ main();
   50% { transform: scale(1.35); opacity: 1; }
   100% { transform: scale(1); opacity: 0.85; }
 }
+/* Safety-trigger marks get a sharper, quicker alert pulse than the calm
+   self-report breathing — a system event reads differently from a feeling. */
+.safety-tick {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: safety-alert 1.4s ease-in-out infinite;
+}
+@keyframes safety-alert {
+  0% { transform: scale(1); opacity: 0.8; }
+  30% { transform: scale(1.25); opacity: 1; }
+  60% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
 .lane-label {
   font-family: var(--mono); font-size: 9px; fill: var(--ink-dim);
   text-transform: uppercase; letter-spacing: 0.08em;
 }
 @media (prefers-reduced-motion: reduce) {
-  .track-bar, .emo-tick { animation: none; }
+  .track-bar, .emo-tick, .safety-tick { animation: none; }
 }
 </style>

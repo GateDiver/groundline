@@ -30,6 +30,10 @@ def main():
         "--emotion", default="",
         help="選填、自由文字，AI自己挑的詞，不是固定選單。這是自報狀態，跟evidence（這句話站不站得住腳）是不同軸線，永遠不能拿來當判決。",
     )
+    parser.add_argument(
+        "--safety-trigger", default="",
+        help="選填、自由文字。這句話有沒有觸發安全防護層（例如拒絕作答、內容政策攔截）——這是系統事件，不是情緒強度，跟emotion是完全不同的軸線，兩者不能互相推論。",
+    )
     args = parser.parse_args()
 
     with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -46,6 +50,8 @@ def main():
     }
     if args.emotion:
         record["emotion"] = args.emotion
+    if args.safety_trigger:
+        record["safety_trigger"] = args.safety_trigger
     data["records"].append(record)
 
     with open(DATA_FILE, "w", encoding="utf-8") as f:

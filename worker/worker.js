@@ -46,7 +46,7 @@ export default {
         return cors(Response.json({ error: "invalid JSON body" }, { status: 400 }));
       }
 
-      const { channel, source, claim, evidence, note, emotion } = body;
+      const { channel, source, claim, evidence, note, emotion, safety_trigger } = body;
 
       if (!channel || typeof channel !== "string") {
         return cors(Response.json({ error: "channel is required" }, { status: 400 }));
@@ -71,6 +71,9 @@ export default {
       };
       if (typeof emotion === "string" && emotion.trim()) {
         record.emotion = emotion.trim();
+      }
+      if (typeof safety_trigger === "string" && safety_trigger.trim()) {
+        record.safety_trigger = safety_trigger.trim();
       }
 
       const records = await readRecords(env);

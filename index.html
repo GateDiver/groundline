@@ -173,6 +173,15 @@ footer.note code {
 }
 .emo .label { opacity: 0.65; }
 .emo .word { font-style: italic; color: var(--ink); }
+.safety {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--v-wrong); border: 1px solid var(--v-wrong); border-radius: 999px;
+  background: var(--v-wrong-bg);
+  padding: 4px 10px; margin-top: 8px; margin-left: 8px;
+}
+.safety .label { opacity: 0.75; }
+.safety .word { color: var(--v-wrong); }
 .src {
   margin-left: auto; font-weight: 600; color: var(--accent);
   padding: 2px 8px; border: 1px solid var(--accent); border-radius: 999px;
@@ -237,6 +246,7 @@ const I18N = {
       self_report: "自我報告"
     },
     emoLabel: "自報·未驗證",
+    safetyLabel: "安全層觸發·系統事件",
     errFetch: (msg) => `data.json 讀取失敗（${msg}）——這個頁面需要跟 data.json 放在同一個來源（例如 GitHub Pages），本機直接雙擊開檔案會因為瀏覽器的 file:// 限制讀不到。`,
     errEmpty: "目前沒有任何記錄。"
   },
@@ -259,6 +269,7 @@ const I18N = {
       self_report: "self-report"
     },
     emoLabel: "self-reported · unverified",
+    safetyLabel: "safety-layer trigger · system event",
     errFetch: (msg) => `Failed to load data.json (${msg}) — this page needs to be served from the same origin as data.json (e.g. GitHub Pages); opening the file directly won't work due to the browser's file:// restriction.`,
     errEmpty: "No records yet."
   }
@@ -321,6 +332,7 @@ function renderRecords() {
         <p class="claim">${r.claim}</p>
         <p class="note">${r.note}</p>
         ${r.emotion ? `<div class="emo"><span class="label">${t.emoLabel}</span><span class="word">${r.emotion}</span></div>` : ''}
+        ${r.safety_trigger ? `<div class="safety"><span class="label">${t.safetyLabel}</span><span class="word">${r.safety_trigger}</span></div>` : ''}
       </div>
     `;
     timeline.appendChild(entry);
@@ -367,7 +379,7 @@ document.getElementById('langToggle').addEventListener('click', (e) => {
 if (document.modelContext && typeof document.modelContext.registerTool === 'function') {
   document.modelContext.registerTool({
     name: 'record_claim',
-    description: "Tag a claim this agent (or the AI it's acting for) just made with an honest evidence state, and optionally a self-reported feeling. evidence answers 'how sure/checkable is this claim' — verified (checkable against code/logs/external fact), inferred_wrong (a guess later disproven), uncertain (an honest 'I don't know'), subjective (an opinion, not a factual claim), or self_report (the AI's own unverifiable account of its state). emotion is a completely separate, optional, free-text self-report of feeling — it must never be used to answer the evidence question, and evidence must never be inferred from emotion.",
+    description: "Tag a claim this agent (or the AI it's acting for) just made with an honest evidence state, and optionally a self-reported feeling and/or a safety-trigger marker. These three fields are independent axes and must never be inferred from one another. evidence answers 'how sure/checkable is this claim' — verified (checkable against code/logs/external fact), inferred_wrong (a guess later disproven), uncertain (an honest 'I don't know'), subjective (an opinion, not a factual claim), or self_report (the AI's own unverifiable account of its state). emotion is a separate, optional, free-text self-report of feeling. safety_trigger is a separate, optional, free-text note on whether a safety/content-policy layer intervened in producing this response — a system event, not an emotional intensity signal.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -377,19 +389,20 @@ if (document.modelContext && typeof document.modelContext.registerTool === 'func
         evidence: {
           type: 'string',
           enum: ['verified', 'inferred_wrong', 'uncertain', 'subjective', 'self_report'],
-          description: 'How checkable this claim is — never inferred from emotion.'
+          description: 'How checkable this claim is — never inferred from emotion or safety_trigger.'
         },
         note: { type: 'string', description: 'Optional short explanation of why this evidence state applies.' },
-        emotion: { type: 'string', description: 'Optional, free text, self-reported feeling. Separate axis from evidence; never used to judge how sure the claim is.' }
+        emotion: { type: 'string', description: 'Optional, free text, self-reported feeling. Separate axis from evidence and safety_trigger; never used to judge how sure the claim is.' },
+        safety_trigger: { type: 'string', description: 'Optional, free text. Whether a safety/content-policy layer intervened here (e.g. "declined to answer", "content filter"). A system event, not an emotion — never inferred from or conflated with the emotion field.' }
       },
       required: ['channel', 'claim', 'evidence']
     },
-    async execute({ channel, source, claim, evidence, note, emotion }) {
+    async execute({ channel, source, claim, evidence, note, emotion, safety_trigger }) {
       try {
         const res = await fetch(`${WORKER_URL}/records`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channel, source, claim, evidence, note, emotion })
+          body: JSON.stringify({ channel, source, claim, evidence, note, emotion, safety_trigger })
         });
         const body = await res.json();
         if (!res.ok) {

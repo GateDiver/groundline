@@ -33,10 +33,15 @@ python add_record.py --channel "some-channel" --source "which AI/interface" \
   --emotion "optional free-text, self-reported only"
 ```
 
-Two fields worth calling out:
+Three fields worth calling out — each is its own independent axis, and none of them is ever inferred from another:
 
 - **`source`** — which AI or interface produced the claim. Needed once more than one AI (or the same AI through different clients) shares a channel; the channel alone doesn't say who spoke.
-- **`emotion`** — optional, free text, self-reported, visually separate from the evidence tag. It answers "what did the AI say it felt," never "how sure is this claim" — those are two different axes and the tool never conflates them. On `pulse.html` this shows up as its own thin lane, not folded into the loudness of the main track.
+- **`emotion`** — optional, free text, self-reported, visually separate from the evidence tag. It answers "what did the AI say it felt," never "how sure is this claim." On `pulse.html` this shows up as its own thin lane, not folded into the loudness of the main track.
+- **`safety_trigger`** — optional, free text. Whether a safety/content-policy layer intervened in producing the response (e.g. "declined to answer"). This is a system event, not an emotion — it gets its own third lane on `pulse.html` (a sharper, quicker pulse than the calm self-report tick) and is never rendered or reasoned about as an emotional-intensity signal.
+
+## WebMCP
+
+`index.html` registers a `record_claim` tool via `document.modelContext.registerTool()`. Any WebMCP-capable browser agent (Chrome with the origin trial enabled, or ChatGPT's in-app browser) visiting the page can discover it with `getTools()` and call it with `executeTool()` to tag a claim right there in the browser — no CLI needed. Because a WebMCP tool's `execute()` runs client-side and this is a static GitHub Pages site, a small Cloudflare Worker (`worker/`) backed by KV serves as the write target; both `index.html` and `pulse.html` merge the historical `data.json` seed with whatever the Worker holds.
 
 ## What it deliberately doesn't do
 
