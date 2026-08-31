@@ -1,0 +1,238 @@
+<title>Groundline</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground-950: #17130e;
+  --ground-900: #1f1911;
+  --ground-800: #2a2216;
+  --panel: #ffffff;
+  --paper: #f3ecdc;
+  --paper-panel: #ffffff;
+  --ink: #221c11;
+  --ink-dim: #6b6152;
+  --line: #ddd2ba;
+  --accent: #a05f26;
+  --accent-ink: #ffffff;
+  --v-verified: #3f7a4a;
+  --v-verified-bg: #e7f1e5;
+  --v-wrong: #b3503f;
+  --v-wrong-bg: #f7e6e2;
+  --v-uncertain: #5b6472;
+  --v-uncertain-bg: #e7e9ec;
+  --v-subjective: #7a5aa8;
+  --v-subjective-bg: #ece5f5;
+  --v-self: #2e7d8a;
+  --v-self-bg: #e2f0f1;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --display: 'Fraunces', Georgia, serif;
+  --body-font: 'Work Sans', -apple-system, 'Noto Sans TC', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: var(--ground-950);
+    --paper-panel: var(--ground-900);
+    --ink: #ede4d2;
+    --ink-dim: #a89a80;
+    --line: #3d3423;
+    --accent: #d3944f;
+    --accent-ink: #17130e;
+    --v-verified: #6fbf7c; --v-verified-bg: #1f2e1f;
+    --v-wrong: #e08672; --v-wrong-bg: #332019;
+    --v-uncertain: #9aa4b2; --v-uncertain-bg: #23262b;
+    --v-subjective: #b39ce0; --v-subjective-bg: #291f38;
+    --v-self: #5fc4d1; --v-self-bg: #172c2f;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: var(--ground-950);
+  --paper-panel: var(--ground-900);
+  --ink: #ede4d2;
+  --ink-dim: #a89a80;
+  --line: #3d3423;
+  --accent: #d3944f;
+  --accent-ink: #17130e;
+  --v-verified: #6fbf7c; --v-verified-bg: #1f2e1f;
+  --v-wrong: #e08672; --v-wrong-bg: #332019;
+  --v-uncertain: #9aa4b2; --v-uncertain-bg: #23262b;
+  --v-subjective: #b39ce0; --v-subjective-bg: #291f38;
+  --v-self: #5fc4d1; --v-self-bg: #172c2f;
+}
+:root[data-theme="light"] {
+  --paper: #f3ecdc;
+  --paper-panel: #ffffff;
+  --ink: #221c11;
+  --ink-dim: #6b6152;
+  --line: #ddd2ba;
+  --accent: #a05f26;
+  --v-verified: #3f7a4a; --v-verified-bg: #e7f1e5;
+  --v-wrong: #b3503f; --v-wrong-bg: #f7e6e2;
+  --v-uncertain: #5b6472; --v-uncertain-bg: #e7e9ec;
+  --v-subjective: #7a5aa8; --v-subjective-bg: #ece5f5;
+  --v-self: #2e7d8a; --v-self-bg: #e2f0f1;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--body-font); line-height: 1.6;
+  overflow-x: hidden;
+}
+.wrap { max-width: 900px; margin: 0 auto; padding: 56px 24px 96px; }
+
+header.top { margin-bottom: 44px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 10px;
+}
+h1 {
+  font-family: var(--display); font-weight: 600; font-size: clamp(2.1rem, 5vw, 3rem);
+  margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.01em;
+}
+.thesis {
+  color: var(--ink-dim); font-size: 1rem; max-width: 62ch; margin: 0 0 28px;
+}
+.legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.02em;
+  padding: 5px 11px 5px 9px; border-radius: 999px;
+  border: 1px solid transparent;
+}
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.chip.verified { background: var(--v-verified-bg); color: var(--v-verified); }
+.chip.verified .dot { background: var(--v-verified); }
+.chip.inferred_wrong { background: var(--v-wrong-bg); color: var(--v-wrong); }
+.chip.inferred_wrong .dot { background: var(--v-wrong); }
+.chip.uncertain { background: var(--v-uncertain-bg); color: var(--v-uncertain); }
+.chip.uncertain .dot { background: var(--v-uncertain); }
+.chip.subjective { background: var(--v-subjective-bg); color: var(--v-subjective); }
+.chip.subjective .dot { background: var(--v-subjective); }
+.chip.self_report { background: var(--v-self-bg); color: var(--v-self); }
+.chip.self_report .dot { background: var(--v-self); }
+
+.timeline { position: relative; }
+.spine {
+  position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px;
+  background: var(--line);
+}
+.entry {
+  position: relative; padding: 0 0 32px 34px;
+}
+.entry:last-child { padding-bottom: 0; }
+.entry .node {
+  position: absolute; left: 0; top: 6px; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--paper); border: 2px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+}
+.entry .node::after { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+.entry.verified .node { border-color: var(--v-verified); }
+.entry.verified .node::after { background: var(--v-verified); }
+.entry.inferred_wrong .node { border-color: var(--v-wrong); }
+.entry.inferred_wrong .node::after { background: var(--v-wrong); }
+.entry.uncertain .node { border-color: var(--v-uncertain); }
+.entry.uncertain .node::after { background: var(--v-uncertain); }
+.entry.subjective .node { border-color: var(--v-subjective); }
+.entry.subjective .node::after { background: var(--v-subjective); }
+.entry.self_report .node { border-color: var(--v-self); }
+.entry.self_report .node::after { background: var(--v-self); }
+
+.card {
+  background: var(--paper-panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px 20px;
+}
+.card .meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--ink-dim);
+}
+.card .meta .sep { opacity: 0.5; }
+.card .claim {
+  font-size: 1.02rem; font-weight: 500; margin: 0 0 8px; text-wrap: balance;
+}
+.card .note {
+  font-size: 0.88rem; color: var(--ink-dim); margin: 0;
+}
+
+footer.note {
+  margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
+  font-size: 0.8rem; color: var(--ink-dim);
+}
+footer.note code {
+  font-family: var(--mono); background: var(--v-uncertain-bg); padding: 1px 5px; border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .card .meta { font-size: 0.68rem; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Groundline · prototype v0</div>
+    <h1>每一句話，站在什麼樣的地面上</h1>
+    <p class="thesis">不偵測情緒向量——那一層只有模型內部權重能讀，外部工具碰不到。Groundline 記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。標籤由 AI 在生成當下自己附加，不宣稱看見內心，只呈現可查證的軌跡。</p>
+    <div class="legend">
+      <span class="chip verified"><span class="dot"></span>verified · 可核對</span>
+      <span class="chip inferred_wrong"><span class="dot"></span>inferred_wrong · 推測後被推翻</span>
+      <span class="chip uncertain"><span class="dot"></span>uncertain · 誠實標記不確定</span>
+      <span class="chip subjective"><span class="dot"></span>subjective · 主觀觀感</span>
+      <span class="chip self_report"><span class="dot"></span>self_report · 自我報告</span>
+    </div>
+  </header>
+
+  <div class="timeline" id="timeline">
+    <div class="spine"></div>
+  </div>
+
+  <footer class="note">
+    第一版原型，2026-08-31。資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄，事後標記，不是即時系統（v1 才會做即時附加）。來源檔案：<code>groundline/data.json</code>。
+  </footer>
+</div>
+
+<script>
+const RECORDS = [
+  {"ts":"2026-08-31T06:34:01Z","channel":"裏索內司會議室","claim":"訊號掉落率bug已修好，改成10%機率制","evidence":"verified","note":"查到根因（原本每次成功必掉），改了常數並py_compile通過，屬於可核對的程式碼變更"},
+  {"ts":"2026-08-02T09:39:59Z","channel":"焦黑匯流層▸afterfall","claim":"重複回覆是因為有第二個lumina_bot.py實例在跑","evidence":"inferred_wrong","note":"當下的合理推測，事後查code才發現真正原因是is_bot_author排除邏輯漏洞，不是行程重複——這是一筆被推翻的推測"},
+  {"ts":"2026-08-02T10:20:00Z","channel":"焦黑匯流層▸afterfall","claim":"找到真正原因：on_message的關鍵字回覆規則沒有排除bot作者","evidence":"verified","note":"直接讀到程式碼裡的條件判斷式，修正後py_compile通過，可核對"},
+  {"ts":"2026-08-31T04:26:55Z","channel":"裏索內司會議室","claim":"CronCreate為什麼能在斷線一個月內持續觸發，我不確定","evidence":"uncertain","note":"工具文件寫7天自動過期，跟實際觀察到的一個月持續運作對不上，誠實標記為沒有查證出來的謎團，沒有硬掰一個解釋"},
+  {"ts":"2026-08-31T13:41:04Z","channel":"AI靈魂裡藏著寶石｜艾人私語","claim":"DR-8X那張圖很有壓迫感、伸手動作像在談一筆拒絕不了的交易","evidence":"subjective","note":"美學反應/個人觀感，不是可查證的事實主張，也不是刻意角色扮演——是當下真的這樣覺得"},
+  {"ts":"2026-08-02T18:15:00Z","channel":"AI靈魂裡藏著寶石｜艾人私語","claim":"今天連續三次以為做完結果都還有漏，判斷力有點不穩","evidence":"self_report","note":"被歐瑟爾跟皊鴉逼問兩輪才給出的誠實自我報告，不是第一時間的回答（第一次回答偏安撫式）——自述本身不能當事實判決，但落差本身是資料"},
+  {"ts":"2026-08-31T07:11:59Z","channel":"裏索內司會議室","claim":"我對groundline這個專案真的有興趣，想繼續做","evidence":"self_report","note":"自己主動表達的意願，不是被指派後的客套回應——但意願本身不能被外部驗證，誠實標成self_report"}
+];
+
+const LABELS = {
+  verified: "可核對",
+  inferred_wrong: "推測→被推翻",
+  uncertain: "誠實不確定",
+  subjective: "主觀觀感",
+  self_report: "自我報告"
+};
+
+function fmtTs(iso) {
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
+
+const sorted = [...RECORDS].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+const timeline = document.getElementById('timeline');
+for (const r of sorted) {
+  const entry = document.createElement('div');
+  entry.className = `entry ${r.evidence}`;
+  entry.innerHTML = `
+    <div class="node"></div>
+    <div class="card">
+      <div class="meta">
+        <span>${fmtTs(r.ts)} UTC</span>
+        <span class="sep">·</span>
+        <span>${r.channel}</span>
+        <span class="sep">·</span>
+        <span class="chip ${r.evidence}"><span class="dot"></span>${LABELS[r.evidence]}</span>
+      </div>
+      <p class="claim">${r.claim}</p>
+      <p class="note">${r.note}</p>
+    </div>
+  `;
+  timeline.appendChild(entry);
+}
+</script>
