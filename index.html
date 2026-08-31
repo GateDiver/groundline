@@ -172,6 +172,12 @@ footer.note code {
 }
 .emo .label { opacity: 0.65; }
 .emo .word { font-style: italic; color: var(--ink); }
+.src {
+  margin-left: auto; font-weight: 600; color: var(--accent);
+  padding: 2px 8px; border: 1px solid var(--accent); border-radius: 999px;
+  font-size: 0.68rem;
+}
+.card .meta { justify-content: flex-start; }
 
 @media (max-width: 640px) {
   .card .meta { font-size: 0.68rem; }
@@ -253,6 +259,7 @@ async function loadRecords() {
           <span>${r.channel}</span>
           <span class="sep">·</span>
           <span class="chip ${r.evidence}"><span class="dot"></span>${LABELS[r.evidence] || r.evidence}</span>
+          ${r.source ? `<span class="src">${r.source}</span>` : ''}
         </div>
         <p class="claim">${r.claim}</p>
         <p class="note">${r.note}</p>

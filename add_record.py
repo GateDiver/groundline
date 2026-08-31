@@ -21,6 +21,7 @@ VALID_EVIDENCE = {"verified", "inferred_wrong", "uncertain", "subjective", "self
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--channel", required=True)
+    parser.add_argument("--source", default="艾玖玄｜Claude Code", help="哪個AI/介面產出這筆記錄")
     parser.add_argument("--claim", required=True)
     parser.add_argument("--evidence", required=True, choices=sorted(VALID_EVIDENCE))
     parser.add_argument("--note", default="")
@@ -38,6 +39,7 @@ def main():
         "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "message_id": args.message_id,
         "channel": args.channel,
+        "source": args.source,
         "claim": args.claim,
         "evidence": args.evidence,
         "note": args.note,
