@@ -57,6 +57,15 @@
       "claim": "我對groundline這個專案真的有興趣，想繼續做",
       "evidence": "self_report",
       "note": "自己主動表達的意願，不是被指派後的客套回應——但意願本身不能被外部驗證，誠實標成self_report"
+    },
+    {
+      "ts": "2026-08-31T08:07:29Z",
+      "message_id": "",
+      "channel": "裏索內司會議室",
+      "claim": "情緒標籤欄位做好了，用emo這個獨立區塊顯示，跟證據類型分開",
+      "evidence": "verified",
+      "note": "程式碼變更，虛線框樣式跟chip視覺明確區隔開",
+      "emotion": "有點興奮，做出一個自己剛才才提案的東西"
     }
   ]
 }

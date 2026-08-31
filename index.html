@@ -164,6 +164,14 @@ footer.note code {
   font-size: 0.9rem; color: var(--v-wrong); background: var(--v-wrong-bg);
   border-radius: 10px; padding: 14px 16px; margin-left: 34px;
 }
+.emo {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--ink-dim); border: 1px dashed var(--line); border-radius: 999px;
+  padding: 4px 10px; margin-top: 8px;
+}
+.emo .label { opacity: 0.65; }
+.emo .word { font-style: italic; color: var(--ink); }
 
 @media (max-width: 640px) {
   .card .meta { font-size: 0.68rem; }
@@ -248,6 +256,7 @@ async function loadRecords() {
         </div>
         <p class="claim">${r.claim}</p>
         <p class="note">${r.note}</p>
+        ${r.emotion ? `<div class="emo"><span class="label">自報·未驗證</span><span class="word">${r.emotion}</span></div>` : ''}
       </div>
     `;
     timeline.appendChild(entry);

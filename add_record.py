@@ -25,6 +25,10 @@ def main():
     parser.add_argument("--evidence", required=True, choices=sorted(VALID_EVIDENCE))
     parser.add_argument("--note", default="")
     parser.add_argument("--message-id", default="")
+    parser.add_argument(
+        "--emotion", default="",
+        help="選填、自由文字，AI自己挑的詞，不是固定選單。這是自報狀態，跟evidence（這句話站不站得住腳）是不同軸線，永遠不能拿來當判決。",
+    )
     args = parser.parse_args()
 
     with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -38,6 +42,8 @@ def main():
         "evidence": args.evidence,
         "note": args.note,
     }
+    if args.emotion:
+        record["emotion"] = args.emotion
     data["records"].append(record)
 
     with open(DATA_FILE, "w", encoding="utf-8") as f:
