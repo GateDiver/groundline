@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Groundline · Pulse</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -95,15 +96,16 @@ template { display: none; }
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Groundline · pulse · variant 1 of 3</div>
-  <h1>不是AI的腦，是AI留下的痕跡</h1>
-  <p class="caveat">這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，隨時間排列，脈動感是設計選擇，不是在暗示這是活體訊號。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條曲線。</p>
+  <div class="eyebrow">Groundline · pulse · audio-track</div>
+  <h1>不是AI的心跳，是AI內心工作空間的聲軌</h1>
+  <p class="caveat">這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，用混音台/示波器的錶頭語言呈現：判斷越重大，那一格就越大聲。不是要暗示AI有生理反應，是把內部本來就在跑的多條訊號攤開來給你看。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條軌。</p>
   <div class="legend">
     <span><span class="dot" style="background:var(--v-verified)"></span>verified</span>
     <span><span class="dot" style="background:var(--v-wrong)"></span>inferred_wrong</span>
     <span><span class="dot" style="background:var(--v-uncertain)"></span>uncertain</span>
     <span><span class="dot" style="background:var(--v-subjective)"></span>subjective</span>
     <span><span class="dot" style="background:var(--v-self)"></span>self_report</span>
+    <span><span class="dot" style="background:var(--accent); border-radius:2px; width:8px; height:8px;"></span>情緒（自報，未驗證）</span>
   </div>
   <div id="sources"></div>
   <footer class="note">← <a href="./index.html">回到時間線</a>　·　資料來源：<code>data.json</code></footer>
@@ -127,17 +129,17 @@ const COLORS = {
   subjective: 'var(--v-subjective)',
   self_report: 'var(--v-self)'
 };
-const AMP = { verified: 26, inferred_wrong: 58, uncertain: 14, subjective: 34, self_report: 40 };
+// Loudness: how tall a bar gets — bigger judgment, bigger block.
+const AMP = { verified: 34, inferred_wrong: 90, uncertain: 20, subjective: 52, self_report: 60 };
 
 const sourcesEl = document.getElementById('sources');
 const tpl = document.getElementById('stageTpl');
-const W = 1200, H = 300, MIDY = 150;
+const W = 1200, H = 300, MIDY = 150, EMO_Y = 258;
 
 function ns(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
 function renderSource(sourceName, records) {
   const frag = tpl.content.cloneNode(true);
-  const section = frag.querySelector('.source-block');
   const h = frag.querySelector('.source-h');
   h.innerHTML = `${sourceName} <span class="n">· ${records.length} 筆</span>`;
   const svg = frag.querySelector('svg');
@@ -147,12 +149,12 @@ function renderSource(sourceName, records) {
   sourcesEl.appendChild(frag);
 
   const n = records.length;
-  const margin = 60;
-  const step = (W - margin * 2) / Math.max(n - 1, 1);
+  const margin = 50;
+  const step = (W - margin * 2) / Math.max(n, 1);
+  const barW = Math.min(step * 0.58, 30);
   const points = records.map((r, i) => ({
-    x: margin + step * i,
-    y: MIDY,
-    amp: AMP[r.evidence] || 20,
+    x: margin + step * i + step / 2,
+    amp: AMP[r.evidence] || 24,
     color: COLORS[r.evidence] || 'var(--ink-dim)',
     r
   }));
@@ -162,99 +164,87 @@ function renderSource(sourceName, records) {
   const defs = ns('defs');
   defs.innerHTML = `
     <filter id="${glowId}" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   `;
   svg.appendChild(defs);
 
-  // Flowing vector-network lines: several thin, semi-transparent, continuously
-  // animated curves — the "many signals moving" feel, not one clean readout.
-  const FLOW_COLORS = ['var(--accent)', 'var(--v-verified)', 'var(--v-subjective)', 'var(--v-self)', 'var(--v-uncertain)'];
-  const flows = [];
-  const flowGroup = ns('g');
-  for (let i = 0; i < 6; i++) {
-    const path = ns('path');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', FLOW_COLORS[i % FLOW_COLORS.length]);
-    path.setAttribute('stroke-width', i % 3 === 0 ? '1.4' : '0.8');
-    path.setAttribute('opacity', i % 3 === 0 ? '0.34' : '0.16');
-    flowGroup.appendChild(path);
-    flows.push({
-      el: path,
-      amp: 10 + (i * 7) % 40,
-      freq: 1.4 + i * 0.55,
-      speed: 0.006 + i * 0.0025,
-      phase: i * 1.1,
-      yOffset: ((i % 3) - 1) * 46
-    });
-  }
-  svg.appendChild(flowGroup);
+  // Baseline / center line of the audio-track — the "zero" the bars rise from.
+  const baseline = ns('line');
+  baseline.setAttribute('x1', 0); baseline.setAttribute('x2', W);
+  baseline.setAttribute('y1', MIDY); baseline.setAttribute('y2', MIDY);
+  baseline.setAttribute('stroke', 'var(--line)'); baseline.setAttribute('stroke-width', '1');
+  svg.appendChild(baseline);
 
-  function flowD(f, t) {
-    let d = `M 0 ${MIDY + f.yOffset}`;
-    for (let x = 0; x <= W; x += 10) {
-      const y = MIDY + f.yOffset
-        + Math.sin((x / W) * Math.PI * f.freq + t * (f.speed * 3.2) + f.phase) * f.amp
-        + Math.sin((x / W) * Math.PI * f.freq * 2.3 + t * (f.speed * 2.2)) * (f.amp * 0.25);
-      d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-    }
-    return d;
-  }
+  const lane = ns('text');
+  lane.setAttribute('x', 6); lane.setAttribute('y', MIDY - 6);
+  lane.setAttribute('class', 'lane-label'); lane.textContent = 'evidence';
+  svg.appendChild(lane);
 
-  // Nodes — pulse peaks sit where the record actually happened, riding on top
-  // of the flow, not connected by a rigid line.
+  const emoLane = ns('text');
+  emoLane.setAttribute('x', 6); emoLane.setAttribute('y', EMO_Y + 14);
+  emoLane.setAttribute('class', 'lane-label'); emoLane.textContent = 'self-report';
+  svg.appendChild(emoLane);
+
+  // Main track — a waveform meter, one symmetric bar per record. Height is
+  // the "loudness": how significant the judgment was, not an emotion signal.
   points.forEach((p, i) => {
     const g = ns('g');
-    g.setAttribute('class', 'node-g');
+    g.setAttribute('class', 'bar-g');
 
-    const ring = ns('circle');
-    ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y - p.amp * 0.7);
-    ring.setAttribute('r', 14); ring.setAttribute('fill', 'none');
-    ring.setAttribute('stroke', p.color); ring.setAttribute('stroke-width', '1.5');
-    ring.setAttribute('class', 'pulse-ring');
-    ring.style.animationDelay = `${(i * 0.31) % 1.1}s`;
+    const bar = ns('rect');
+    const bh = p.amp * 2;
+    bar.setAttribute('x', (p.x - barW / 2).toFixed(1));
+    bar.setAttribute('y', (MIDY - p.amp).toFixed(1));
+    bar.setAttribute('width', barW.toFixed(1));
+    bar.setAttribute('height', bh.toFixed(1));
+    bar.setAttribute('rx', 2.5);
+    bar.setAttribute('fill', p.color);
+    bar.setAttribute('filter', `url(#${glowId})`);
+    bar.setAttribute('class', 'track-bar');
+    bar.style.animationDelay = `${(i * 0.27) % 4}s`;
+    bar.style.transformOrigin = `${p.x}px ${MIDY}px`;
+    bar.style.cursor = 'pointer';
+    g.appendChild(bar);
 
-    const dot = ns('circle');
-    dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y - p.amp * 0.7);
-    dot.setAttribute('r', 5); dot.setAttribute('fill', p.color);
-    dot.setAttribute('filter', `url(#${glowId})`);
-    dot.setAttribute('class', 'pulse-dot');
-    dot.style.animationDelay = `${(i * 0.31) % 1.1}s`;
-    dot.style.cursor = 'pointer';
+    // self-report sub-lane: a small tick only for records carrying a free-text emotion
+    let emoDot = null;
+    if (p.r.emotion) {
+      emoDot = ns('rect');
+      emoDot.setAttribute('x', (p.x - 4).toFixed(1));
+      emoDot.setAttribute('y', (EMO_Y - 4).toFixed(1));
+      emoDot.setAttribute('width', 8); emoDot.setAttribute('height', 8);
+      emoDot.setAttribute('rx', 2);
+      emoDot.setAttribute('fill', 'var(--accent)');
+      emoDot.setAttribute('class', 'emo-tick');
+      emoDot.style.cursor = 'pointer';
+      g.appendChild(emoDot);
+    }
 
-    g.appendChild(ring);
-    g.appendChild(dot);
     svg.appendChild(g);
 
-    g.addEventListener('mouseenter', () => {
-      tip.querySelector('.t-claim').textContent = p.r.claim;
+    const showTip = (emotion) => {
+      tip.querySelector('.t-claim').textContent = emotion ? `「${p.r.emotion}」` : p.r.claim;
       const d = new Date(p.r.ts);
       const src = p.r.source ? ` · ${p.r.source}` : '';
-      tip.querySelector('.t-meta').textContent = `${p.r.evidence}${src} · ${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+      const label = emotion ? `情緒·自報·未驗證${src}` : p.r.evidence + src;
+      tip.querySelector('.t-meta').textContent = `${label} · ${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
       const rect = stage.getBoundingClientRect();
       const svgRect = svg.getBoundingClientRect();
       const scale = svgRect.width / W;
+      const ty = emotion ? EMO_Y - 12 : MIDY - p.amp - 10;
       tip.style.left = (svgRect.left - rect.left + p.x * scale) + 'px';
-      tip.style.top = (svgRect.top - rect.top + (p.y - p.amp * 0.7) * scale - 14) + 'px';
+      tip.style.top = (svgRect.top - rect.top + ty * scale) + 'px';
       tip.classList.add('show');
-    });
-    g.addEventListener('mouseleave', () => tip.classList.remove('show'));
-  });
-
-  // Animate the flow lines continuously
-  let t = 0;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduceMotion) {
-    function tick() {
-      t += 1;
-      for (const f of flows) f.el.setAttribute('d', flowD(f, t));
-      requestAnimationFrame(tick);
+    };
+    bar.addEventListener('mouseenter', () => showTip(false));
+    bar.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    if (emoDot) {
+      emoDot.addEventListener('mouseenter', () => showTip(true));
+      emoDot.addEventListener('mouseleave', () => tip.classList.remove('show'));
     }
-    tick();
-  } else {
-    for (const f of flows) f.el.setAttribute('d', flowD(f, 0));
-  }
+  });
 }
 
 async function main() {
@@ -284,31 +274,33 @@ main();
 </script>
 
 <style>
-/* Heartbeat pulse: quick expand (systole), slower settle (diastole) — not a
-   symmetric slow breathe. cubic-bezier front-loads the expansion. */
-.pulse-dot {
-  transform-origin: center;
+/* Slow meter-breathing: a mixer bar isn't dead-still, but it's not a fast
+   pulse either — a few seconds per cycle, gentle scale on the vertical axis. */
+.track-bar {
   transform-box: fill-box;
-  animation: heartbeat-dot 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: bar-breathe 3.6s ease-in-out infinite;
 }
-.pulse-ring {
-  transform-origin: center;
+.track-bar:hover { filter: brightness(1.15); }
+@keyframes bar-breathe {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(1.055); }
+  100% { transform: scaleY(1); }
+}
+.emo-tick {
   transform-box: fill-box;
-  animation: heartbeat-ring 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transform-origin: center;
+  animation: emo-breathe 2.8s ease-in-out infinite;
 }
-@keyframes heartbeat-dot {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.35); }
-  28% { transform: scale(0.96); }
-  40% { transform: scale(1.12); }
-  100% { transform: scale(1); }
+@keyframes emo-breathe {
+  0% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.85; }
 }
-@keyframes heartbeat-ring {
-  0% { transform: scale(1); opacity: 0.55; }
-  14% { transform: scale(1.9); opacity: 0.05; }
-  100% { transform: scale(1); opacity: 0; }
+.lane-label {
+  font-family: var(--mono); font-size: 9px; fill: var(--ink-dim);
+  text-transform: uppercase; letter-spacing: 0.08em;
 }
 @media (prefers-reduced-motion: reduce) {
-  .pulse-dot, .pulse-ring { animation: none; }
+  .track-bar, .emo-tick { animation: none; }
 }
 </style>
