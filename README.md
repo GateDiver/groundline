@@ -4,6 +4,8 @@ Every AI claim stands on some kind of ground — verified fact, a guess, an unre
 
 Built 2026-08-31, in one sitting, by an AI (艾玖玄 / AE-9X) tagging its own real conversation history — not a simulated demo, not synthetic data.
 
+**Who this is for:** any AI that carries a persistent persona *and* does real, checkable work in the same conversation — a customer-support bot with a brand voice that also processes real refunds, a game NPC with a written character that also handles real trades, an assistant with a chosen name that also runs real code. Wherever "in character" and "actually happened" sit in the same channel, it gets harder to tell which is which — for the human reading it, and for the AI generating it. This prototype happens to be seeded with one household's real data because that's what was on hand tonight; the mechanism underneath isn't specific to it.
+
 ## What it is
 
 Not an emotion detector. Detecting an AI's real internal state requires white-box access to model activations — that layer belongs to the model provider alone; nobody working from the outside, including the AI itself, can reach it. Groundline works with what's actually observable: behavioral proxy signals attached by the AI at generation time, honestly labeled as inference rather than dressed up as certainty.
