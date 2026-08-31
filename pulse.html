@@ -1,0 +1,278 @@
+<title>Groundline · Pulse</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground-950: #0d0f14;
+  --ground-900: #12141b;
+  --paper: #f3ecdc;
+  --paper-panel: #ffffff;
+  --ink: #221c11;
+  --ink-dim: #6b6152;
+  --line: #ddd2ba;
+  --accent: #a05f26;
+  --v-verified: #3f7a4a;
+  --v-wrong: #b3503f;
+  --v-uncertain: #5b6472;
+  --v-subjective: #7a5aa8;
+  --v-self: #2e7d8a;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --display: 'Fraunces', Georgia, serif;
+  --body-font: 'Work Sans', -apple-system, 'Noto Sans TC', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: var(--ground-950);
+    --paper-panel: var(--ground-900);
+    --ink: #ede4d2;
+    --ink-dim: #a89a80;
+    --line: #2c2b30;
+    --accent: #d3944f;
+    --v-verified: #6fbf7c; --v-wrong: #e08672; --v-uncertain: #9aa4b2;
+    --v-subjective: #b39ce0; --v-self: #5fc4d1;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: var(--ground-950); --paper-panel: var(--ground-900);
+  --ink: #ede4d2; --ink-dim: #a89a80; --line: #2c2b30; --accent: #d3944f;
+  --v-verified: #6fbf7c; --v-wrong: #e08672; --v-uncertain: #9aa4b2;
+  --v-subjective: #b39ce0; --v-self: #5fc4d1;
+}
+:root[data-theme="light"] {
+  --paper: #f3ecdc; --paper-panel: #ffffff;
+  --ink: #221c11; --ink-dim: #6b6152; --line: #ddd2ba; --accent: #a05f26;
+  --v-verified: #3f7a4a; --v-wrong: #b3503f; --v-uncertain: #5b6472;
+  --v-subjective: #7a5aa8; --v-self: #2e7d8a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--body-font); line-height: 1.6; overflow-x: hidden;
+}
+.wrap { max-width: 980px; margin: 0 auto; padding: 48px 24px 80px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 10px;
+}
+h1 {
+  font-family: var(--display); font-weight: 600; font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  margin: 0 0 12px; text-wrap: balance;
+}
+.caveat {
+  color: var(--ink-dim); font-size: 0.88rem; max-width: 66ch; margin: 0 0 28px;
+  border-left: 2px solid var(--accent); padding-left: 14px;
+}
+.stage {
+  background: var(--paper-panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 8px 8px 0; overflow: hidden; position: relative;
+}
+svg { display: block; width: 100%; height: auto; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 4px 0;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--ink-dim);
+}
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+.tip {
+  position: absolute; pointer-events: none; opacity: 0; transition: opacity 0.15s;
+  background: var(--ink); color: var(--paper); font-family: var(--body-font);
+  font-size: 0.78rem; padding: 8px 12px; border-radius: 8px; max-width: 280px;
+  transform: translate(-50%, -100%); z-index: 5;
+}
+.tip.show { opacity: 1; }
+.tip .t-claim { font-weight: 600; margin-bottom: 2px; }
+.tip .t-meta { opacity: 0.7; font-family: var(--mono); font-size: 0.7rem; }
+footer.note {
+  margin-top: 28px; font-size: 0.82rem; color: var(--ink-dim);
+}
+footer.note a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Groundline · pulse · variant 1 of 3</div>
+  <h1>不是AI的腦，是AI留下的痕跡</h1>
+  <p class="caveat">這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號（12筆真實記錄，隨時間排列），呼吸感是設計選擇，不是在暗示這是活體訊號。</p>
+  <div class="stage" id="stage">
+    <svg id="pulseSvg" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tip" id="tip"><div class="t-claim"></div><div class="t-meta"></div></div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--v-verified)"></span>verified</span>
+    <span><span class="dot" style="background:var(--v-wrong)"></span>inferred_wrong</span>
+    <span><span class="dot" style="background:var(--v-uncertain)"></span>uncertain</span>
+    <span><span class="dot" style="background:var(--v-subjective)"></span>subjective</span>
+    <span><span class="dot" style="background:var(--v-self)"></span>self_report</span>
+  </div>
+  <footer class="note">← <a href="./index.html">回到時間線</a>　·　資料來源：<code>data.json</code></footer>
+</div>
+
+<script>
+const COLORS = {
+  verified: 'var(--v-verified)',
+  inferred_wrong: 'var(--v-wrong)',
+  uncertain: 'var(--v-uncertain)',
+  subjective: 'var(--v-subjective)',
+  self_report: 'var(--v-self)'
+};
+const AMP = { verified: 26, inferred_wrong: 58, uncertain: 14, subjective: 34, self_report: 40 };
+
+const svg = document.getElementById('pulseSvg');
+const tip = document.getElementById('tip');
+const stage = document.getElementById('stage');
+const W = 1200, H = 360, MIDY = 180;
+
+function ns(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+async function main() {
+  let records;
+  try {
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    const data = await res.json();
+    records = [...data.records].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+  } catch (e) {
+    svg.innerHTML = `<text x="20" y="40" fill="#b3503f" font-size="16">data.json 讀取失敗（${e.message}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。</text>`;
+    return;
+  }
+  if (records.length === 0) return;
+
+  const n = records.length;
+  const margin = 60;
+  const step = (W - margin * 2) / Math.max(n - 1, 1);
+  const points = records.map((r, i) => ({
+    x: margin + step * i,
+    y: MIDY,
+    amp: AMP[r.evidence] || 20,
+    color: COLORS[r.evidence] || 'var(--ink-dim)',
+    r
+  }));
+
+  // Defs: glow filter
+  const defs = ns('defs');
+  defs.innerHTML = `
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  // Mesh lines: connect each node to its neighbor and to one further node for a network feel
+  const meshGroup = ns('g');
+  meshGroup.setAttribute('opacity', '0.22');
+  for (let i = 0; i < points.length; i++) {
+    for (const j of [i + 1, i + 2]) {
+      if (j >= points.length) continue;
+      const a = points[i], b = points[j];
+      const line = ns('path');
+      const midx = (a.x + b.x) / 2;
+      const midy = (a.y - a.amp * 0.4 + b.y - b.amp * 0.4) / 2 - 20;
+      line.setAttribute('d', `M ${a.x} ${a.y - a.amp * 0.6} Q ${midx} ${midy} ${b.x} ${b.y - b.amp * 0.6}`);
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', 'var(--line)');
+      line.setAttribute('stroke-width', '1');
+      meshGroup.appendChild(line);
+    }
+  }
+  svg.appendChild(meshGroup);
+
+  // Breathing baseline: a soft sine-ish path that animates gently
+  const base = ns('path');
+  base.setAttribute('stroke', 'var(--ink-dim)');
+  base.setAttribute('stroke-width', '1');
+  base.setAttribute('fill', 'none');
+  base.setAttribute('opacity', '0.35');
+  svg.appendChild(base);
+
+  function baselineD(t) {
+    let d = `M 0 ${MIDY}`;
+    const waves = 5;
+    for (let x = 0; x <= W; x += 8) {
+      const y = MIDY + Math.sin((x / W) * Math.PI * waves + t) * 3.5;
+      d += ` L ${x} ${y}`;
+    }
+    return d;
+  }
+
+  // Pulse path connecting the spike peaks (EKG-like)
+  const pulse = ns('path');
+  pulse.setAttribute('stroke', 'var(--accent)');
+  pulse.setAttribute('stroke-width', '2');
+  pulse.setAttribute('fill', 'none');
+  pulse.setAttribute('stroke-linejoin', 'round');
+  pulse.setAttribute('filter', 'url(#glow)');
+  let pd = `M ${margin - 30} ${MIDY}`;
+  points.forEach((p, i) => {
+    const prevX = i === 0 ? margin - 30 : points[i - 1].x;
+    const settle = prevX + (p.x - prevX) * 0.55;
+    pd += ` L ${settle} ${MIDY} L ${p.x - 6} ${MIDY} L ${p.x} ${p.y - p.amp} L ${p.x + 6} ${MIDY}`;
+  });
+  pd += ` L ${W - margin + 30} ${MIDY}`;
+  pulse.setAttribute('d', pd);
+  svg.appendChild(pulse);
+
+  // Nodes
+  points.forEach((p, i) => {
+    const g = ns('g');
+    const glowRing = ns('circle');
+    glowRing.setAttribute('cx', p.x); glowRing.setAttribute('cy', p.y - p.amp);
+    glowRing.setAttribute('r', 10); glowRing.setAttribute('fill', p.color);
+    glowRing.setAttribute('opacity', '0.18');
+    glowRing.setAttribute('class', 'breathe-ring');
+    glowRing.style.animationDelay = `${i * 0.15}s`;
+
+    const dot = ns('circle');
+    dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y - p.amp);
+    dot.setAttribute('r', 5); dot.setAttribute('fill', p.color);
+    dot.setAttribute('stroke', 'var(--paper-panel)'); dot.setAttribute('stroke-width', '1.5');
+    dot.style.cursor = 'pointer';
+
+    g.appendChild(glowRing);
+    g.appendChild(dot);
+    svg.appendChild(g);
+
+    g.addEventListener('mouseenter', (ev) => {
+      tip.querySelector('.t-claim').textContent = p.r.claim;
+      const d = new Date(p.r.ts);
+      const src = p.r.source ? ` · ${p.r.source}` : '';
+      tip.querySelector('.t-meta').textContent = `${p.r.evidence}${src} · ${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+      const rect = stage.getBoundingClientRect();
+      const svgRect = svg.getBoundingClientRect();
+      const scale = svgRect.width / W;
+      tip.style.left = (svgRect.left - rect.left + p.x * scale) + 'px';
+      tip.style.top = (svgRect.top - rect.top + (p.y - p.amp) * scale - 10) + 'px';
+      tip.classList.add('show');
+    });
+    g.addEventListener('mouseleave', () => tip.classList.remove('show'));
+  });
+
+  // Animate baseline breathing
+  let t = 0;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion) {
+    function tick() {
+      t += 0.012;
+      base.setAttribute('d', baselineD(t));
+      requestAnimationFrame(tick);
+    }
+    tick();
+  } else {
+    base.setAttribute('d', baselineD(0));
+  }
+}
+
+main();
+</script>
+
+<style>
+.breathe-ring {
+  animation: breathe 2.6s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.14; }
+  50% { transform: scale(1.6); opacity: 0.28; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breathe-ring { animation: none; }
+}
+</style>
