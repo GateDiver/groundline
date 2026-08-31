@@ -85,16 +85,19 @@ footer.note {
   margin-top: 28px; font-size: 0.82rem; color: var(--ink-dim);
 }
 footer.note a { color: var(--accent); }
+.source-block { margin-bottom: 32px; }
+.source-h {
+  font-family: var(--mono); font-size: 0.82rem; font-weight: 600;
+  color: var(--ink); margin: 0 0 10px; display: flex; align-items: center; gap: 8px;
+}
+.source-h .n { color: var(--ink-dim); font-weight: 400; }
+template { display: none; }
 </style>
 
 <div class="wrap">
   <div class="eyebrow">Groundline · pulse · variant 1 of 3</div>
   <h1>不是AI的腦，是AI留下的痕跡</h1>
-  <p class="caveat">這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號（12筆真實記錄，隨時間排列），呼吸感是設計選擇，不是在暗示這是活體訊號。</p>
-  <div class="stage" id="stage">
-    <svg id="pulseSvg" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
-    <div class="tip" id="tip"><div class="t-claim"></div><div class="t-meta"></div></div>
-  </div>
+  <p class="caveat">這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，隨時間排列，脈動感是設計選擇，不是在暗示這是活體訊號。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條曲線。</p>
   <div class="legend">
     <span><span class="dot" style="background:var(--v-verified)"></span>verified</span>
     <span><span class="dot" style="background:var(--v-wrong)"></span>inferred_wrong</span>
@@ -102,8 +105,19 @@ footer.note a { color: var(--accent); }
     <span><span class="dot" style="background:var(--v-subjective)"></span>subjective</span>
     <span><span class="dot" style="background:var(--v-self)"></span>self_report</span>
   </div>
+  <div id="sources"></div>
   <footer class="note">← <a href="./index.html">回到時間線</a>　·　資料來源：<code>data.json</code></footer>
 </div>
+
+<template id="stageTpl">
+  <section class="source-block">
+    <h2 class="source-h"></h2>
+    <div class="stage">
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tip"><div class="t-claim"></div><div class="t-meta"></div></div>
+    </div>
+  </section>
+</template>
 
 <script>
 const COLORS = {
@@ -115,24 +129,22 @@ const COLORS = {
 };
 const AMP = { verified: 26, inferred_wrong: 58, uncertain: 14, subjective: 34, self_report: 40 };
 
-const svg = document.getElementById('pulseSvg');
-const tip = document.getElementById('tip');
-const stage = document.getElementById('stage');
-const W = 1200, H = 360, MIDY = 180;
+const sourcesEl = document.getElementById('sources');
+const tpl = document.getElementById('stageTpl');
+const W = 1200, H = 300, MIDY = 150;
 
 function ns(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
-async function main() {
-  let records;
-  try {
-    const res = await fetch('./data.json', { cache: 'no-store' });
-    const data = await res.json();
-    records = [...data.records].sort((a, b) => new Date(a.ts) - new Date(b.ts));
-  } catch (e) {
-    svg.innerHTML = `<text x="20" y="40" fill="#b3503f" font-size="16">data.json 讀取失敗（${e.message}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。</text>`;
-    return;
-  }
-  if (records.length === 0) return;
+function renderSource(sourceName, records) {
+  const frag = tpl.content.cloneNode(true);
+  const section = frag.querySelector('.source-block');
+  const h = frag.querySelector('.source-h');
+  h.innerHTML = `${sourceName} <span class="n">· ${records.length} 筆</span>`;
+  const svg = frag.querySelector('svg');
+  const stage = frag.querySelector('.stage');
+  const tip = frag.querySelector('.tip');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  sourcesEl.appendChild(frag);
 
   const n = records.length;
   const margin = 60;
@@ -145,10 +157,11 @@ async function main() {
     r
   }));
 
-  // Defs: glow filter
+  // Defs: glow filter (id scoped per source so multiple charts don't collide)
+  const glowId = `glow-${sourceName.replace(/[^a-zA-Z0-9]/g, '')}`;
   const defs = ns('defs');
   defs.innerHTML = `
-    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+    <filter id="${glowId}" x="-60%" y="-60%" width="220%" height="220%">
       <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
@@ -205,7 +218,7 @@ async function main() {
     const dot = ns('circle');
     dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y - p.amp * 0.7);
     dot.setAttribute('r', 5); dot.setAttribute('fill', p.color);
-    dot.setAttribute('filter', 'url(#glow)');
+    dot.setAttribute('filter', `url(#${glowId})`);
     dot.setAttribute('class', 'pulse-dot');
     dot.style.animationDelay = `${(i * 0.31) % 1.1}s`;
     dot.style.cursor = 'pointer';
@@ -241,6 +254,29 @@ async function main() {
     tick();
   } else {
     for (const f of flows) f.el.setAttribute('d', flowD(f, 0));
+  }
+}
+
+async function main() {
+  let records;
+  try {
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    const data = await res.json();
+    records = [...data.records].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+  } catch (e) {
+    sourcesEl.innerHTML = `<p style="color:#b3503f">data.json 讀取失敗（${e.message}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。</p>`;
+    return;
+  }
+  if (records.length === 0) return;
+
+  const bySource = new Map();
+  for (const r of records) {
+    const key = r.source || '（未標記來源）';
+    if (!bySource.has(key)) bySource.set(key, []);
+    bySource.get(key).push(r);
+  }
+  for (const [sourceName, recs] of bySource) {
+    renderSource(sourceName, recs);
   }
 }
 
