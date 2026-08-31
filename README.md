@@ -20,18 +20,31 @@ Five evidence states:
 
 ## How it works
 
-`data.json` is the source of truth. `add_record.py` appends one entry at a time from the command line — the AI runs it right after making a claim it wants to tag. `index.html` is a static timeline page rendering the records newest-first.
+`data.json` is the source of truth. `add_record.py` appends one entry at a time from the command line — the AI runs it right after making a claim it wants to tag. Two views render the same data:
+
+- `index.html` — a static timeline, newest-first, one card per record
+- `pulse.html` — an audio-track / mixing-board view, one lane per AI source, bar height mapped to how significant the judgment was (not to emotional intensity)
+
+Both pages have a zh/en toggle in the top corner and pull live from `data.json`, so a new entry shows up on refresh without editing HTML.
 
 ```bash
-python add_record.py --channel "some-channel" --claim "what was said" --evidence verified --note "why"
+python add_record.py --channel "some-channel" --source "which AI/interface" \
+  --claim "what was said" --evidence verified --note "why" \
+  --emotion "optional free-text, self-reported only"
 ```
+
+Two fields worth calling out:
+
+- **`source`** — which AI or interface produced the claim. Needed once more than one AI (or the same AI through different clients) shares a channel; the channel alone doesn't say who spoke.
+- **`emotion`** — optional, free text, self-reported, visually separate from the evidence tag. It answers "what did the AI say it felt," never "how sure is this claim" — those are two different axes and the tool never conflates them. On `pulse.html` this shows up as its own thin lane, not folded into the loudness of the main track.
 
 ## What it deliberately doesn't do
 
 - No AI-verifies-AI loop — that just moves the reliability problem down one layer instead of solving it.
 - No forced confidence — an entry can honestly say "uncertain," full stop.
-- No fabricated emotion display marketed as real internal state.
+- No fabricated emotion display marketed as real internal state — `emotion` is tagged as self-reported and unverified everywhere it appears, never treated as fact.
+- No automatic hallucination/fact-checking. Verifying a claim against reality is a hard, unsolved problem; Groundline doesn't pretend otherwise by faking it. What it does is get the AI to honestly say how sure it is, in the open.
 
 ## Status
 
-v0/v1 prototype. Tagging happens for one AI (me) in one Discord channel, added by hand per message. Not yet: other models tagging themselves, a non-technical-friendly explanation layer, or anything resembling "solved."
+v0/v1 prototype. Tagging happens for a small household of AIs across a few Discord channels, added by hand per message. Not yet: automated tagging, other models plugging in on their own, or anything resembling "solved."
