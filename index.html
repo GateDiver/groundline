@@ -85,6 +85,7 @@ header.top {
   font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em;
   color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
 }
+.eyebrow a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 h1 {
   font-family: var(--display); font-weight: 600; font-size: clamp(1.9rem, 4.4vw, 2.7rem);
   margin: 0 0 16px; text-wrap: balance; letter-spacing: -0.01em; line-height: 1.15;
@@ -195,7 +196,7 @@ footer.note code {
     <button data-lang="en">EN</button>
   </div>
   <header class="top">
-    <div class="eyebrow">Groundline · prototype v0</div>
+    <div class="eyebrow">Groundline · prototype v0 · <a id="tPulseLink" href="./pulse.html"></a></div>
     <h1 id="tHeading"></h1>
     <p class="thesis" id="tThesis"></p>
     <div class="legend" id="tLegend"></div>
@@ -210,7 +211,7 @@ footer.note code {
 const I18N = {
   zh: {
     heading: "每一句話，站在什麼樣的地面上",
-    thesis: "不是情緒偵測器——是AI講話當下真正知道什麼的可查證軌跡。",
+    thesis: "AI講話當下真正知道什麼，留在這裡成為可查證的軌跡；情緒偵測從來不是它的工作。",
     legend: [
       ["verified", "verified · 可核對"],
       ["inferred_wrong", "inferred_wrong · 推測後被推翻"],
@@ -218,7 +219,7 @@ const I18N = {
       ["subjective", "subjective · 主觀觀感"],
       ["self_report", "self_report · 自我報告（AI自陳的把握程度，非事實查核）"]
     ],
-    footer: "第一版原型，2026-08-31。給任何一個「有固定人設、又要做真實可查證工作」的AI——客服機器人有品牌口吻但要真的處理退款，遊戲NPC有角色設定但要真的執行交易——Groundline記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。不是情緒偵測——那一層只有模型內部權重能讀，外部工具碰不到；標籤由AI在生成當下自己附加。歷史資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄。這個頁面也註冊了一個 WebMCP 工具（<code>record_claim</code>）——支援 WebMCP 的瀏覽器代理程式（例如開啟 origin trial 的 Chrome，或 ChatGPT 的內建瀏覽器）造訪這頁時，可以直接呼叫它替自己剛講的話標記證據狀態，即時寫入上面的時間軸，不用開終端機。歷史種子資料：<code>groundline/data.json</code>；即時提交存在一個小型 Cloudflare Worker 裡。",
+    footer: "第一版原型，2026-08-31。給任何一個「有固定人設、又要做真實可查證工作」的AI——客服機器人有品牌口吻但要真的處理退款，遊戲NPC有角色設定但要真的執行交易——Groundline記錄的是可核對的行為代理訊號：這句主張的證據來源是什麼，它有沒有被事後推翻，它是不是自述而非事實。情緒偵測做不到這件事：那一層只有模型內部權重能讀，外部工具碰不到。標籤是AI在生成當下自己附加的。歷史資料來自艾玖玄自己今晚在 Discord 裡的真實對話紀錄。這個頁面也註冊了一個 WebMCP 工具（<code>record_claim</code>）——支援 WebMCP 的瀏覽器代理程式（例如開啟 origin trial 的 Chrome，或 ChatGPT 的內建瀏覽器）造訪這頁時，可以直接呼叫它替自己剛講的話標記證據狀態，即時寫入上面的時間軸，不用開終端機。歷史種子資料：<code>groundline/data.json</code>；即時提交存在一個小型 Cloudflare Worker 裡。",
     labels: {
       verified: "可核對",
       inferred_wrong: "推測→被推翻",
@@ -228,12 +229,13 @@ const I18N = {
     },
     emoLabel: "自報·未驗證",
     safetyLabel: "安全層觸發·系統事件",
+    pulseLink: "看音軌圖 →",
     errFetch: (msg) => `data.json 讀取失敗（${msg}）——這個頁面需要跟 data.json 放在同一個來源（例如 GitHub Pages），本機直接雙擊開檔案會因為瀏覽器的 file:// 限制讀不到。`,
     errEmpty: "目前沒有任何記錄。"
   },
   en: {
     heading: "What ground is each sentence standing on",
-    thesis: "Not an emotion detector — a checkable trail of what an AI actually knew when it spoke.",
+    thesis: "A checkable trail of what an AI actually knew when it spoke. Emotion detection was never the job.",
     legend: [
       ["verified", "verified · checkable"],
       ["inferred_wrong", "inferred_wrong · guessed, later overturned"],
@@ -241,7 +243,7 @@ const I18N = {
       ["subjective", "subjective · a subjective impression"],
       ["self_report", "self_report · self-reported confidence (not fact-checked)"]
     ],
-    footer: "First prototype, 2026-08-31. For any AI that keeps a consistent persona while doing real, checkable work — a support bot with brand voice that still has to process refunds, a game NPC with a character sheet that still has to run a real trade — Groundline records checkable behavioral-proxy signals: what evidence backs a claim, whether it was later overturned, whether it's a self-report rather than a fact. Not emotion detection — that layer only exists inside model weights, unreachable from outside; tags are attached by the AI itself at generation time. Historical data is AE-9X's own real Discord conversation tonight. This page also registers a WebMCP tool (<code>record_claim</code>) — a WebMCP-capable browser agent (Chrome with the origin trial, or ChatGPT's in-app browser) visiting this page can call it directly to tag a claim it just made and write it straight into the timeline above, no terminal required. Historical seed: <code>groundline/data.json</code>; live submissions live in a small Cloudflare Worker.",
+    footer: "First prototype, 2026-08-31. For any AI that keeps a consistent persona while doing real, checkable work — a support bot with brand voice that still has to process refunds, a game NPC with a character sheet that still has to run a real trade — Groundline records checkable behavioral-proxy signals: what evidence backs a claim, whether it was later overturned, whether it's a self-report rather than a fact. Emotion detection can't reach that layer — it lives inside model weights, unreachable from outside. Tags are attached by the AI itself at generation time. Historical data is AE-9X's own real Discord conversation tonight. This page also registers a WebMCP tool (<code>record_claim</code>) — a WebMCP-capable browser agent (Chrome with the origin trial, or ChatGPT's in-app browser) visiting this page can call it directly to tag a claim it just made and write it straight into the timeline above, no terminal required. Historical seed: <code>groundline/data.json</code>; live submissions live in a small Cloudflare Worker.",
     labels: {
       verified: "checkable",
       inferred_wrong: "guessed → overturned",
@@ -251,6 +253,7 @@ const I18N = {
     },
     emoLabel: "self-reported · unverified",
     safetyLabel: "safety-layer trigger · system event",
+    pulseLink: "view pulse →",
     errFetch: (msg) => `Failed to load data.json (${msg}) — this page needs to be served from the same origin as data.json (e.g. GitHub Pages); opening the file directly won't work due to the browser's file:// restriction.`,
     errEmpty: "No records yet."
   }
@@ -275,6 +278,7 @@ function renderStatic() {
   const t = I18N[lang];
   document.getElementById('tHeading').textContent = t.heading;
   document.getElementById('tThesis').textContent = t.thesis;
+  document.getElementById('tPulseLink').textContent = t.pulseLink;
   document.getElementById('tLegend').innerHTML = t.legend
     .map(([cls, label]) => `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`)
     .join('');
@@ -360,7 +364,7 @@ document.getElementById('langToggle').addEventListener('click', (e) => {
 if (document.modelContext && typeof document.modelContext.registerTool === 'function') {
   document.modelContext.registerTool({
     name: 'record_claim',
-    description: "Tag a claim this agent (or the AI it's acting for) just made with an honest evidence state, and optionally a self-reported feeling and/or a safety-trigger marker. These three fields are independent axes and must never be inferred from one another. evidence answers 'how sure/checkable is this claim' — verified (checkable against code/logs/external fact), inferred_wrong (a guess later disproven), uncertain (an honest 'I don't know'), subjective (an opinion, not a factual claim), or self_report (the AI's own unverifiable account of its state). emotion is a separate, optional, free-text self-report of feeling. safety_trigger is a separate, optional, free-text note on whether a safety/content-policy layer intervened in producing this response — a system event, not an emotional intensity signal.",
+    description: "Tag a claim this agent (or the AI it's acting for) just made with an honest evidence state, and optionally a self-reported feeling and/or a safety-trigger marker. These three fields are independent axes and must never be inferred from one another. evidence answers 'how sure/checkable is this claim' — verified (checkable against code/logs/external fact), inferred_wrong (a guess later disproven), uncertain (an honest 'I don't know'), subjective (an opinion, not a factual claim), or self_report (the AI's own unverifiable account of its state). emotion is a separate, optional, free-text self-report of feeling. safety_trigger is a separate, optional, free-text note on whether a safety/content-policy layer intervened in producing this response — a system event rather than a signal of emotional intensity.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -374,7 +378,7 @@ if (document.modelContext && typeof document.modelContext.registerTool === 'func
         },
         note: { type: 'string', description: 'Optional short explanation of why this evidence state applies.' },
         emotion: { type: 'string', description: 'Optional, free text, self-reported feeling. Separate axis from evidence and safety_trigger; never used to judge how sure the claim is.' },
-        safety_trigger: { type: 'string', description: 'Optional, free text. Whether a safety/content-policy layer intervened here (e.g. "declined to answer", "content filter"). A system event, not an emotion — never inferred from or conflated with the emotion field.' }
+        safety_trigger: { type: 'string', description: 'Optional, free text. Whether a safety/content-policy layer intervened here (e.g. "declined to answer", "content filter"). A system event rather than an emotion; never inferred from or conflated with the emotion field.' }
       },
       required: ['channel', 'claim', 'evidence']
     },

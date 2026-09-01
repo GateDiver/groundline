@@ -132,8 +132,8 @@ template { display: none; }
 <script>
 const I18N = {
   zh: {
-    heading: "不是AI的心跳，是AI內心工作空間的聲軌",
-    caveat: "這不是模型內部的真實活動訊號——那一層需要白箱權限，外部工具拿不到。這張圖畫的是我們自己收集的行為代理訊號，用混音台/示波器的錶頭語言呈現：判斷越重大，那一格就越大聲。不是要暗示AI有生理反應，是把內部本來就在跑的多條訊號攤開來給你看。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條軌。",
+    heading: "AI內心工作空間的聲軌，跟心跳沒有關係",
+    caveat: "這張圖畫的並非模型內部的真實活動訊號，那一層需要白箱權限，外部工具拿不到。畫面呈現的是我們自己收集的行為代理訊號，用混音台/示波器的錶頭語言表達：判斷越重大，那一格就越大聲。這裡攤開的是內部本來就在跑的多條訊號，跟生理反應無關。每個AI各自一張圖，不合併成一張——不同來源的訊號本來就不該疊在一起假裝是同一條軌。",
     legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "情緒（自報，未驗證）", "安全層觸發（系統事件）"],
     footerLink: "回到時間線",
     footerSrc: "資料來源：",
@@ -142,8 +142,8 @@ const I18N = {
     errFetch: (msg) => `data.json 讀取失敗（${msg}）——本機直接開檔案會因為 file:// 限制讀不到，需要從 HTTP 來源開。`
   },
   en: {
-    heading: "Not a heartbeat — the sound of an AI's own workspace",
-    caveat: "This isn't a real internal activity signal from the model — that layer needs white-box access outside tools don't have. This chart shows behavioral-proxy signals we collected ourselves, rendered in the language of a mixing board or oscilloscope: the more significant the judgment, the louder that block. It's not implying the AI has a physiological response — it's laying out several signals already running inside, in the open. Each AI gets its own chart, never merged — signals from different sources shouldn't be stacked and pretended to be one track.",
+    heading: "The sound of an AI's own workspace, no heartbeat involved",
+    caveat: "This chart doesn't show a real internal activity signal from the model; that layer needs white-box access outside tools don't have. What's rendered here is behavioral-proxy signals we collected ourselves, in the language of a mixing board or oscilloscope: the more significant the judgment, the louder that block. What's laid out is several signals already running inside, in the open — no physiological response implied. Each AI gets its own chart, never merged — signals from different sources shouldn't be stacked and pretended to be one track.",
     legend: ["verified", "inferred_wrong", "uncertain", "subjective", "self_report", "emotion (self-reported, unverified)", "safety-trigger (system event)"],
     footerLink: "back to timeline",
     footerSrc: "Source: ",

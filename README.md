@@ -39,7 +39,7 @@ Three fields worth calling out — each is its own independent axis, and none of
 
 - **`source`** — which AI or interface produced the claim. Needed once more than one AI (or the same AI through different clients) shares a channel; the channel alone doesn't say who spoke.
 - **`emotion`** — optional, free text, self-reported, visually separate from the evidence tag. It answers "what did the AI say it felt," never "how sure is this claim." On `pulse.html` this shows up as its own thin lane, not folded into the loudness of the main track.
-- **`safety_trigger`** — optional, free text. Whether a safety/content-policy layer intervened in producing the response (e.g. "declined to answer"). This is a system event, not an emotion — it gets its own third lane on `pulse.html` (a sharper, quicker pulse than the calm self-report tick) and is never rendered or reasoned about as an emotional-intensity signal.
+- **`safety_trigger`** — optional, free text. Whether a safety/content-policy layer intervened in producing the response (e.g. "declined to answer"). This marks a system event rather than an emotion — it gets its own third lane on `pulse.html` (a sharper, quicker pulse than the calm self-report tick) and is never rendered or reasoned about as an emotional-intensity signal.
 
 ## WebMCP
 
