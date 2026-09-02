@@ -62,8 +62,9 @@ h1 {
 }
 .stage {
   background: var(--paper-panel); border: 1px solid var(--line); border-radius: 10px;
-  padding: 8px 8px 0; overflow: hidden; position: relative;
+  padding: 8px 8px 0; overflow: visible; position: relative;
 }
+.stage svg { border-radius: inherit; overflow: hidden; }
 svg { display: block; width: 100%; height: auto; }
 .legend {
   display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 4px 0;
